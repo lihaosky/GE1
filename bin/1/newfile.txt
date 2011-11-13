@@ -1,0 +1,3 @@
+bin
+newfile.txt
+src

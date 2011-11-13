@@ -72,6 +72,9 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		
 	}
 	
+	/**
+	 * Upload result to client
+	 */
 	public byte[] uploadResult() throws RemoteException {
 		return null;
 	}
