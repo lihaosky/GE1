@@ -16,8 +16,12 @@ public class NodeManager {
 	 * Get n nodes
 	 * @param n number of nodes to get
 	 */
-	public static void getNodes(int n) {
-		
+	public static ArrayList<Node> getNodes(int n) {
+		ArrayList<Node> newList = new ArrayList<Node>();
+		Node node = new Node("locahost", Node.AVAILABLE);
+		node.findHandler();
+		newList.add(node);
+		return newList;
 	}
 	
 	/**

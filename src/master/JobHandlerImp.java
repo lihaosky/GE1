@@ -1,12 +1,16 @@
 package master;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import client.Client;
+import common.Directory;
 import common.Message;
 import common.Parameters;
 /**
@@ -35,10 +39,10 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		 * Make directory according to the unique jobID
 		 */
 		File dir = new File(Parameters.clientDataPath + "/" + jobID);
-		if (!dir.mkdir()) {
-			System.out.println("Fail to make directory in server!");
-			return Message.mkDirFail;
-		}
+		
+		Directory.makeDir(dir);
+		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
+		
 		try {
 			/*
 			 * Store the file
@@ -76,7 +80,26 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	 * Upload result to client
 	 */
 	public byte[] uploadResult() throws RemoteException {
-		return null;
+		String filePath = Parameters.masterResultPath + "/" + "result.txt";
+        File file = new File(filePath);
+        byte buffer[] = new byte[(int)file.length()];
+        
+        BufferedInputStream input;
+		try {
+			input = new BufferedInputStream(new FileInputStream(filePath));
+	        input.read(buffer,0,buffer.length);
+	        input.close();
+	        return(buffer);
+		} catch (FileNotFoundException e) {
+			System.err.println("Can't find file to upload!");
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			System.err.println("Error when read file!");
+			e.printStackTrace();
+			return null;
+		}
 	}
+	
 
 }

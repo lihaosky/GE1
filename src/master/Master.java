@@ -19,7 +19,7 @@ public class Master {
 			/*
 			 * Create and bind jobhandler
 			 */
-			Runtime.getRuntime().exec("rmiregistyr &");
+			//Runtime.getRuntime().exec("rmiregistyr &");
 			String jobHandlerName = Parameters.jobHandlerName;
 			JobHandler jobHandler = new JobHandlerImp();
 			//JobHandler jobHandlerStub = (JobHandler) UnicastRemoteObject.exportObject(jobHandler, 0);

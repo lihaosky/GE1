@@ -1,8 +1,13 @@
 package master;
 
+import java.io.File;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import client.Client;
+import common.Directory;
 import common.Node;
+import common.NodeManager;
+import common.Parameters;
 
 /**
  * This class represents a job by a client
@@ -17,6 +22,8 @@ public class Job extends Thread {
 	private String fileName;
 	private ArrayList<Node> slaveList;
 	private static JobAssigner jobAssigner;
+	public boolean isJobDone = false;
+	
 	/**
 	 * Create new Job with number of replications, fileName and client obj
 	 * @param repNum
@@ -34,7 +41,25 @@ public class Job extends Thread {
 	 * Start the job
 	 */
 	public void start() {
+		ArrayList<Integer> taskList = new ArrayList<Integer>();
+		for (int i = 1; i <= repNum; i++) {
+			taskList.add(i);
+		}
+		File dir = new File(Parameters.masterResultPath);
+		Directory.makeDir(dir);
+		slaveList = NodeManager.getNodes(1);
+		slaveList.get(0).setReplist(taskList);
+		slaveList.get(0).addAssignment(jobID, fileName, taskList, jobAssigner);
 		
+		while (!isJobDone);
+		
+		//MERGE RESULT: TO BE DONE
+		
+		try {
+			client.downloadResult("result.txt");
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -49,8 +74,21 @@ public class Job extends Thread {
 	 * Update the repList when result is fetched
 	 * @param repNum
 	 */
-	public void updateRepList(int repNum) {
-		
+	public void updateRepList(int nodeID, int repNum) {
+		for (int i = 0; i < slaveList.size(); i++) {
+			if (slaveList.get(i).getNodeID() == nodeID) {
+				slaveList.get(i).removeRep(repNum);
+			}
+		}
+	}
+	
+	public boolean checkNodeStatus() {
+		for (int i = 0; i < slaveList.size(); i++) {
+			if (!slaveList.get(i).isEmptyRep()) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static void setJobAssigner(JobAssigner jobAgn) {

@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+
+import common.Directory;
 import common.Message;
 import common.Parameters;
 import slave.AssignmentHandler;
@@ -30,13 +32,12 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	}
 
 	@Override
-	public int downloadResult(int jobID, String fileName, int repNum,
+	public int downloadResult(int nodeID, int jobID, String fileName, int repNum,
 			AssignmentHandler assignmentHandler) throws RemoteException {
+		
+		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + repNum);
-		if (!file.mkdir()) {
-			System.err.println("Master make result directory failure!");
-			return Message.mkDirFail;
-		}
+		
 		
 		try {
 			/*
@@ -62,8 +63,10 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 		}
 		
 		Job job = JobTracker.getJob(jobID);
-		job.updateRepList(repNum);
-		
+		job.updateRepList(nodeID, repNum);
+		if (job.checkNodeStatus()) {
+			job.isJobDone = true;
+		}
 		return Message.OK;
 	}
 
@@ -74,7 +77,7 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
         
         BufferedInputStream input;
 		try {
-			input = new BufferedInputStream(new FileInputStream(fileName));
+			input = new BufferedInputStream(new FileInputStream(Parameters.clientDataPath + "/" + jobID + "/" + fileName));
 	        input.read(buffer,0,buffer.length);
 	        input.close();
 	        return(buffer);

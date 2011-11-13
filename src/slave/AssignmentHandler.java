@@ -14,7 +14,7 @@ public interface AssignmentHandler extends Remote {
 	 * @param jobAssigner   Get the master's job assigner. In order to upload data to master
 	 * @throws RemoteException
 	 */
-	public int addAssignment(int jobID, String fileName, ArrayList<Integer> repList, JobAssigner jobAssigner) throws RemoteException;
+	public int addAssignment(int nodeID, int jobID, String fileName, ArrayList<Integer> repList, JobAssigner jobAssigner) throws RemoteException;
 	public byte[] uploadResult(int jobID, int repNum, String fileName) throws RemoteException;
 	public void addRep(ArrayList<Integer> repList) throws RemoteException;
 }

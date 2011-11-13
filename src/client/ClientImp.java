@@ -1,10 +1,12 @@
 package client;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
@@ -12,6 +14,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import common.Directory;
 import common.Message;
 import common.Parameters;
 
@@ -71,8 +74,32 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	/**
 	 * Download result from master
 	 */
-	public void downloadResult() throws RemoteException {
-		// TODO Auto-generated method stub
+	public int downloadResult(String fileName) throws RemoteException {
+		try {
+			/*
+			 * Store the file
+			 */
+			byte[] bytes = jobHandler.uploadResult();
+			if (bytes == null) {
+				System.err.println("No file downloaded!");
+				return Message.noFileUploaded;
+			}
+			Directory.makeDir(new File(Parameters.clientResultPath));
+			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.clientResultPath + "/" + fileName));
+			output.write(bytes,0,bytes.length);
+			output.flush();
+			output.close();
+			
+			//TO BE DONE: may need to unzip the file
+			
+			
+		} catch (IOException e) {
+			System.err.println("Fail to store result file!");
+			e.printStackTrace();
+			return Message.storeClientFileFail;
+		}
+		
+		return Message.OK;
 		
 	}
 	

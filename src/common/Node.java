@@ -1,6 +1,10 @@
 package common;
 
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 
 import master.JobAssigner;
@@ -29,6 +33,16 @@ public class Node {
 	}
 	
 	public AssignmentHandler findHandler() {
+		try {
+			Registry registry = LocateRegistry.getRegistry("localhost");
+			assignmentHandler = (AssignmentHandler)registry.lookup(Parameters.slaveHandlerName);
+		} catch (AccessException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 	
@@ -42,9 +56,26 @@ public class Node {
 	
 	public void addAssignment(int jobID, String fileName, ArrayList<Integer> repList, JobAssigner jobAssigner) {
 		try {
-			assignmentHandler.addAssignment(jobID, fileName, repList, jobAssigner);
+			setReplist(repList);
+			assignmentHandler.addAssignment(nodeID, jobID, fileName, repList, jobAssigner);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public int getNodeID() {
+		return nodeID;
+	}
+	
+	public void removeRep(int repNum) {
+		for (int i = 0; i < repList.size(); i++) {
+			if (repList.get(i) == repNum) {
+				repList.remove(i);
+			}
+		}
+	}
+	
+	public boolean isEmptyRep() {
+		return repList.size() == 0 ? true : false;
 	}
 }

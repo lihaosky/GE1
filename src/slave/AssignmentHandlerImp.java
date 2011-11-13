@@ -35,7 +35,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	/**
 	 * Download data from master, get the replication this slave need to do
 	 */
-	public int addAssignment(int jobID, String fileName,
+	public int addAssignment(int nodeID, int jobID, String fileName,
 			ArrayList<Integer> repList, JobAssigner jobAssigner)
 			throws RemoteException {
 		/*
@@ -48,6 +48,10 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		}
 		BufferedOutputStream output;
 		try {
+			File dir = new File(Parameters.masterDataPath);
+			makeDir(dir);
+			File file = new File(Parameters.masterDataPath + "/" + jobID);
+			file.mkdir();
 			output = new BufferedOutputStream(new FileOutputStream(Parameters.masterDataPath + "/" + jobID + "/" + fileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
@@ -59,7 +63,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		}
 
 		//Start the assignment
-		Assignment assignment = new Assignment(jobID, fileName, repList, jobAssigner);
+		Assignment assignment = new Assignment(nodeID, jobID, fileName, repList, jobAssigner);
 		assignment.start();
 		return Message.OK;
 		
@@ -97,5 +101,6 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		
 		
 	}
+	
 
 }

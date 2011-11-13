@@ -24,6 +24,6 @@ public interface JobAssigner extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public int downloadResult(int jobID, String fileName, int repNum, AssignmentHandler assignmentHandler) throws RemoteException;
+	public int downloadResult(int nodeID, int jobID, String fileName, int repNum, AssignmentHandler assignmentHandler) throws RemoteException;
 
 }
