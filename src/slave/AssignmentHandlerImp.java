@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import common.Message;
 import common.Parameters;
+import common.Directory;
 
 import master.JobAssigner;
 
@@ -49,7 +50,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		BufferedOutputStream output;
 		try {
 			File dir = new File(Parameters.masterDataPath);
-			makeDir(dir);
+			Directory.makeDir(dir);
 			File file = new File(Parameters.masterDataPath + "/" + jobID);
 			file.mkdir();
 			output = new BufferedOutputStream(new FileOutputStream(Parameters.masterDataPath + "/" + jobID + "/" + fileName));
