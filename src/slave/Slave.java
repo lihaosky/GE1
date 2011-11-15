@@ -6,11 +6,15 @@ import java.rmi.registry.Registry;
 
 import common.Parameters;
 
+/**
+ * Starts the slave
+ * @author lihao
+ *
+ */
 public class Slave {
 	public static void main(String[] args) {
 		//start assignment handler...
 		try {
-			Runtime.getRuntime().exec("rmiregistry &");
 			AssignmentHandler assign = new AssignmentHandlerImp();
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(Parameters.slaveHandlerName, assign);
