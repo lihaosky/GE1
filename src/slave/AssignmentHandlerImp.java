@@ -66,8 +66,9 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		//Start the assignment
 		Assignment assignment = new Assignment(nodeID, jobID, fileName, repList, jobAssigner);
 		assignment.start();
-		return Message.OK;
+		AssignmentTracker.addAssignment(jobID, assignment);
 		
+		return Message.OK;
 	}
 
 	/**
