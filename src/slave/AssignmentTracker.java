@@ -3,7 +3,7 @@ package slave;
 import java.util.HashMap;
 
 /**
- * 
+ * Track the assignment
  * @author haoli
  *
  */
