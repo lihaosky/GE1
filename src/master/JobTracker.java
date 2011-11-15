@@ -2,6 +2,11 @@ package master;
 
 import java.util.HashMap;
 
+/**
+ * Track the jobs
+ * @author lihao
+ *
+ */
 public class JobTracker {
 	private static HashMap<Integer, Job> jobMap = new HashMap<Integer, Job>();  //Store map of jobs
 	
