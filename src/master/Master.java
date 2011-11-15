@@ -2,10 +2,13 @@ package master;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
 import common.Parameters;
 
+/**
+ * Starts the master
+ * @author lihao
+ *
+ */
 public class Master {
 	public static void main(String[] args) {
 		/*

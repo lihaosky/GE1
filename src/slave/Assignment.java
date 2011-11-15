@@ -11,6 +11,11 @@ import common.Parameters;
 
 import master.JobAssigner;
 
+/**
+ * Represents divisions assigned by master to execute
+ * @author lihao
+ *
+ */
 public class Assignment extends Thread {
 	private int nodeID;
 	private int jobID;

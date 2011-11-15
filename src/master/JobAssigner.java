@@ -5,6 +5,11 @@ import java.rmi.RemoteException;
 
 import slave.AssignmentHandler;
 
+/**
+ * Remote interface
+ * @author lihao
+ *
+ */
 public interface JobAssigner extends Remote {
 	/**
 	 * Master upload data to slave

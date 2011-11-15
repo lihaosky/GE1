@@ -5,6 +5,11 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import master.JobAssigner;
 
+/**
+ * Remote interface for master to start assignment and get result
+ * @author lihao
+ *
+ */
 public interface AssignmentHandler extends Remote {
 	/**
 	 * Master call slave's remote object to call this method to start assignment in slave
