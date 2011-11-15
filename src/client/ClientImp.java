@@ -207,12 +207,12 @@ class ReadInput extends Thread {
 	}
 	
 	public void start() {
-		System.out.println("To check the job status, press 1");
+		System.out.println("To check the job status, type \"status\"");
 		while (true) {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			try {
 				String i = br.readLine();
-				if (i.equals("1")) {
+				if (i.equals("status")) {
 					client.checkStatus();
 				}
 			} catch (IOException e) {
