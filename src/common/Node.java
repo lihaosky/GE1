@@ -11,7 +11,7 @@ import master.JobAssigner;
 import slave.AssignmentHandler;
 
 /**
- * A slave node
+ * Contains node information
  * @author lihao
  *
  */
@@ -26,6 +26,10 @@ public class Node {
 	public static int AVAILABLE = 1;
 	public static int BUSY = 2;
 	
+	/**
+	 * @param IPAddress Node IP address
+	 * @param status    Node status: Available, Dead or Busy
+	 */
 	public Node(String IPAddress, int status) {
 		nodeID = nextNodeID++;
 		this.IPAddress = IPAddress;
@@ -63,10 +67,18 @@ public class Node {
 		}
 	}
 	
+	/**
+	 * Get nodeID
+	 * @return
+	 */
 	public int getNodeID() {
 		return nodeID;
 	}
 	
+	/**
+	 * Remove a replication from this node when it is done
+	 * @param repNum
+	 */
 	public void removeRep(int repNum) {
 		for (int i = 0; i < repList.size(); i++) {
 			if (repList.get(i) == repNum) {
@@ -75,7 +87,27 @@ public class Node {
 		}
 	}
 	
+	/**
+	 * Check if there is still replication pending in this node
+	 * @return
+	 */
 	public boolean isEmptyRep() {
 		return repList.size() == 0 ? true : false;
+	}
+	
+	/**
+	 * Get IP address of this node
+	 * @return
+	 */
+	public String getIPAddr() {
+		return IPAddress;
+	}
+	
+	/**
+	 * Get status of node
+	 * @return
+	 */
+	public int getStatus() {
+		return status;
 	}
 }
