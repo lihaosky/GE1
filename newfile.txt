@@ -1,3 +1,0 @@
-bin
-newfile.txt
-src
