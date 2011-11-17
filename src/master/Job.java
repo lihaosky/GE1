@@ -34,7 +34,7 @@ public class Job extends Thread {
 		this.repNum = repNum;
 		this.fileName = fileName;
 		this.client = client;
-		jobID = nextJobID++;
+		jobID = getNextJobID();
 	}
 	
 	/**
@@ -82,6 +82,10 @@ public class Job extends Thread {
 		}
 	}
 	
+	/**
+	 * Check if all nodes finishes their assignment
+	 * @return
+	 */
 	public boolean checkNodeStatus() {
 		for (int i = 0; i < slaveList.size(); i++) {
 			if (!slaveList.get(i).isEmptyRep()) {
@@ -91,7 +95,19 @@ public class Job extends Thread {
 		return true;
 	}
 	
+	/**
+	 * Set the job assigner for master
+	 * @param jobAgn job assigner
+	 */
 	public static void setJobAssigner(JobAssigner jobAgn) {
 		Job.jobAssigner = jobAgn;
+	}
+	
+	/**
+	 * Get next jobID, this need to be atomic
+	 * @return
+	 */
+	synchronized static int getNextJobID() {
+		return nextJobID++;
 	}
 }
