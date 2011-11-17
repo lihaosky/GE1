@@ -22,8 +22,8 @@ public class Job extends Thread {
 	private String fileName;
 	private ArrayList<Node> slaveList;
 	private static JobAssigner jobAssigner;
-	public boolean isJobDone = false;
-	
+	//public boolean isJobDone = false;
+	public Object isJobDone = new Object();   //Used to wait for job to be done
 	/**
 	 * Create new Job with number of replications, fileName and client obj
 	 * @param repNum
@@ -51,7 +51,11 @@ public class Job extends Thread {
 		slaveList.get(0).setReplist(taskList);
 		slaveList.get(0).addAssignment(jobID, fileName, taskList, jobAssigner);
 		
-		while (!isJobDone);
+		try {
+			isJobDone.wait();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		
 		//MERGE RESULT: TO BE DONE
 		
