@@ -18,7 +18,7 @@ public interface JobHandler extends Remote {
 	 * @return                 Unique jobID to client
 	 * @throws RemoteException
 	 */
-	public int addJob(int repNum, String fileName, Client client) throws RemoteException;
+	public int addJob(int repNum, Client client) throws RemoteException;
 	
 	/**
 	 * Upload result to client

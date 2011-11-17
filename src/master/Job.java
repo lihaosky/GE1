@@ -19,7 +19,6 @@ public class Job extends Thread {
 	private int jobID;
 	private Client client;
 	private int repNum;
-	private String fileName;
 	private ArrayList<Node> slaveList;
 	private static JobAssigner jobAssigner;
 	//public boolean isJobDone = false;
@@ -30,9 +29,8 @@ public class Job extends Thread {
 	 * @param fileName
 	 * @param client
 	 */
-	public Job(int repNum, String fileName, Client client) {
+	public Job(int repNum, Client client) {
 		this.repNum = repNum;
-		this.fileName = fileName;
 		this.client = client;
 		jobID = getNextJobID();
 	}
@@ -49,7 +47,7 @@ public class Job extends Thread {
 		Directory.makeDir(dir);
 		slaveList = NodeManager.getNodes(1);
 		slaveList.get(0).setReplist(taskList);
-		slaveList.get(0).addAssignment(jobID, fileName, taskList, jobAssigner);
+		slaveList.get(0).addAssignment(jobID, taskList, jobAssigner);
 		
 		try {
 			isJobDone.wait();
@@ -60,7 +58,7 @@ public class Job extends Thread {
 		//MERGE RESULT: TO BE DONE
 		
 		try {
-			client.downloadResult("result.txt");
+			client.downloadResult();
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

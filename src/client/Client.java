@@ -10,5 +10,5 @@ import java.rmi.RemoteException;
  */
 public interface Client extends Remote {
 	public byte[] uploadData() throws RemoteException;
-	public int downloadResult(String fileName) throws RemoteException;
+	public int downloadResult() throws RemoteException;
 }

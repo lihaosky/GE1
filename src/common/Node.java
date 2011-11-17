@@ -58,10 +58,10 @@ public class Node {
 		this.repList = repList;
 	}
 	
-	public void addAssignment(int jobID, String fileName, ArrayList<Integer> repList, JobAssigner jobAssigner) {
+	public void addAssignment(int jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
 		try {
 			setReplist(repList);
-			assignmentHandler.addAssignment(nodeID, jobID, fileName, repList, jobAssigner);
+			assignmentHandler.addAssignment(nodeID, jobID, repList, jobAssigner);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

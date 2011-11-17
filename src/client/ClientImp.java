@@ -74,7 +74,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	/**
 	 * Download result from master
 	 */
-	public int downloadResult(String fileName) throws RemoteException {
+	public int downloadResult() throws RemoteException {
 		try {
 			/*
 			 * Store the file
@@ -85,7 +85,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 				return Message.noFileUploaded;
 			}
 			Directory.makeDir(new File(Parameters.clientResultPath));
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.clientResultPath + "/" + fileName));
+			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.clientResultPath + "/" + Parameters.resultFileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
 			output.close();
@@ -109,7 +109,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	
 	public boolean addJob() {
 		try {
-			jobID = jobHandler.addJob(repNum, fileName, me);
+			jobID = jobHandler.addJob(repNum, me);
 		} catch (RemoteException e) {
 			System.err.println("Remote exception!");
 			e.printStackTrace();

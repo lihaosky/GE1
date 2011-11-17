@@ -32,8 +32,7 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	}
 
 	@Override
-	public int downloadResult(int nodeID, int jobID, String fileName, int repNum,
-			AssignmentHandler assignmentHandler) throws RemoteException {
+	public int downloadResult(int nodeID, int jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException {
 		
 		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + repNum);
@@ -42,12 +41,12 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 			/*
 			 * Store the file
 			 */
-			byte[] bytes = assignmentHandler.uploadResult(jobID, repNum, fileName);
+			byte[] bytes = assignmentHandler.uploadResult(jobID, repNum);
 			if (bytes == null) {
 				System.err.println("No file uploaded!");
 				return Message.noFileUploaded;
 			}
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.masterResultPath + "/" + jobID + "/" + repNum + "/" + fileName));
+			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.masterResultPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
 			output.close();
@@ -71,13 +70,13 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	}
 
 	@Override
-	public byte[] uploadData(int jobID, String fileName) throws RemoteException {
-        File file = new File(Parameters.clientDataPath + "/" + jobID + "/" + fileName);
+	public byte[] uploadData(int jobID) throws RemoteException {
+        File file = new File(Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName);
         byte buffer[] = new byte[(int)file.length()];
         
         BufferedInputStream input;
 		try {
-			input = new BufferedInputStream(new FileInputStream(Parameters.clientDataPath + "/" + jobID + "/" + fileName));
+			input = new BufferedInputStream(new FileInputStream(Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName));
 	        input.read(buffer,0,buffer.length);
 	        input.close();
 	        return(buffer);

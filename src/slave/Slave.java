@@ -23,6 +23,5 @@ public class Slave {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 }

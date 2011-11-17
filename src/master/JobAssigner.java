@@ -18,7 +18,7 @@ public interface JobAssigner extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public byte[] uploadData(int jobID, String fileName) throws RemoteException;
+	public byte[] uploadData(int jobID) throws RemoteException;
 	
 	/**
 	 * Download result from slave. Called by slave. Use jobId to update the remaining replication.
@@ -29,6 +29,6 @@ public interface JobAssigner extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public int downloadResult(int nodeID, int jobID, String fileName, int repNum, AssignmentHandler assignmentHandler) throws RemoteException;
+	public int downloadResult(int nodeID, int jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException;
 
 }

@@ -36,24 +36,23 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	/**
 	 * Download data from master, get the replication this slave need to do
 	 */
-	public int addAssignment(int nodeID, int jobID, String fileName,
-			ArrayList<Integer> repList, JobAssigner jobAssigner)
+	public int addAssignment(int nodeID, int jobID, ArrayList<Integer> repList, JobAssigner jobAssigner)
 			throws RemoteException {
 		/*
 		 * Store the file from master
 		 */
-		byte[] bytes = jobAssigner.uploadData(jobID, fileName);
+		byte[] bytes = jobAssigner.uploadData(jobID);
 		if (bytes == null) {
 			System.err.println("No file uploaded from master!");
 			return Message.noMasterFileUploaded;
 		}
 		BufferedOutputStream output;
 		try {
-			File dir = new File(Parameters.masterDataPath);
+			File dir = new File(Parameters.slaveDataPath);
 			Directory.makeDir(dir);
-			File file = new File(Parameters.masterDataPath + "/" + jobID);
+			File file = new File(Parameters.slaveDataPath + "/" + jobID);
 			file.mkdir();
-			output = new BufferedOutputStream(new FileOutputStream(Parameters.masterDataPath + "/" + jobID + "/" + fileName));
+			output = new BufferedOutputStream(new FileOutputStream(Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
 			output.close();
@@ -64,7 +63,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		}
 
 		//Start the assignment
-		Assignment assignment = new Assignment(nodeID, jobID, fileName, repList, jobAssigner);
+		Assignment assignment = new Assignment(nodeID, jobID, repList, jobAssigner);
 		assignment.start();
 		AssignmentTracker.addAssignment(jobID, assignment);
 		
@@ -74,14 +73,14 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	/**
 	 * Upload result to master
 	 */
-	public byte[] uploadResult(int jobID, int repNum, String fileName)
+	public byte[] uploadResult(int jobID, int repNum)
 			throws RemoteException {
-        File file = new File(Parameters.masterDataPath + "/" + jobID + "/" + repNum + fileName);
+        File file = new File(Parameters.masterDataPath + "/" + jobID + "/" + repNum + Parameters.resultFileName);
         byte buffer[] = new byte[(int)file.length()];
         
         BufferedInputStream input;
 		try {
-			input = new BufferedInputStream(new FileInputStream(fileName));
+			input = new BufferedInputStream(new FileInputStream(Parameters.masterDataPath + "/" + jobID + "/" + repNum + Parameters.resultFileName));
 	        input.read(buffer,0,buffer.length);
 	        input.close();
 	        return(buffer);

@@ -31,14 +31,14 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	}
 
 	
-	public int addJob(int repNum, String fileName, Client client) throws RemoteException {
-		Job job = new Job(repNum, fileName, client);    //Create a new job
+	public int addJob(int repNum, Client client) throws RemoteException {
+		Job job = new Job(repNum, client);    //Create a new job
 		int jobID = job.getJobID();
 	    
 		/*
 		 * Make directory according to the unique jobID
 		 */
-		File dir = new File(Parameters.clientDataPath + "/" + jobID);
+		File dir = new File(Parameters.masterDataPath + "/" + jobID);
 		
 		Directory.makeDir(dir);
 		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
@@ -52,7 +52,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 				System.err.println("No file uploaded!");
 				return Message.noFileUploaded;
 			}
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.clientDataPath + "/" + jobID + "/" + fileName));
+			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
 			output.close();
