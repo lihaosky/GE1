@@ -38,7 +38,6 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + repNum);
 		
-		
 		try {
 			/*
 			 * Store the file
@@ -64,8 +63,9 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 		
 		Job job = JobTracker.getJob(jobID);
 		job.updateRepList(nodeID, repNum);
+		
 		if (job.checkNodeStatus()) {
-			job.isJobDone = true;
+			job.isJobDone.notify();   //Notify that job is done
 		}
 		return Message.OK;
 	}
