@@ -4,7 +4,7 @@ public class Parameters {
 	/**
 	 * Directory to store client data in master
 	 */
-	public static String masterDataPath = ".";    
+	public static String masterDataPath = "/home/lihao/Desktop/masterdata";    
 	/**
 	 * Directory to store client data in slave
 	 */
@@ -13,11 +13,6 @@ public class Parameters {
 	 * Directory to store slave result in master
 	 */
 	public static String masterResultPath = "/home/lihao/Desktop/masterresult";
-	/**
-	 * Directory to store final result in client
-	 */
-	public static String clientResultPath = "/home/lihao/Desktop/clientresult";
-	//public static String slaveResultPath = "/home/lihao/Desktop/slaveresult";
 	
 	/**
 	 * Master job handler name for client lookup
@@ -37,4 +32,16 @@ public class Parameters {
 	 * Result file name in client
 	 */
 	public static String resultFileName = "result.zip";
+	/**
+	 * Needed input files from client
+	 */
+	public static String[] neededInputFiles = {"mars.in02", "mars.in05", "mars.in17", "MARS-LIC"};
+	/**
+	 * Path of marsMain
+	 */
+	public static String marsMainLocation = ".";
+	/**
+	 * Path of marOut
+	 */
+	public static String marsOutLocation = ".";
 }

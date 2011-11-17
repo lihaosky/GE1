@@ -1,6 +1,7 @@
 package master;
 
 import java.io.BufferedInputStream;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +14,7 @@ import client.Client;
 import common.Directory;
 import common.Message;
 import common.Parameters;
+
 /**
  * Handle client job request
  * @author lihao
@@ -31,9 +33,9 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	}
 
 	
-	public int addJob(int repNum, Client client) throws RemoteException {
-		Job job = new Job(repNum, client);    //Create a new job
-		int jobID = job.getJobID();
+	public long addJob(int repNum, Client client, int time) throws RemoteException {
+		Job job = new Job(repNum, client, time);    //Create a new job
+		long jobID = job.getJobID();
 	    
 		/*
 		 * Make directory according to the unique jobID
@@ -72,7 +74,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		return job.getJobID();
 	}
 	
-	public void getJobStatus(int jobId) throws RemoteException {
+	public void getJobStatus(long jobId) throws RemoteException {
 		
 	}
 	
@@ -80,7 +82,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	 * Upload result to client
 	 */
 	public byte[] uploadResult() throws RemoteException {
-		String filePath = Parameters.masterResultPath + "/" + "result.txt";
+		String filePath = Parameters.masterResultPath + "/" + Parameters.resultFileName;
         File file = new File(filePath);
         byte buffer[] = new byte[(int)file.length()];
         

@@ -14,7 +14,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import common.Directory;
+import common.FileOperator;
 import common.Message;
 import common.Parameters;
 
@@ -23,10 +23,9 @@ import master.JobHandler;
 public class ClientImp extends UnicastRemoteObject implements Client{
 	
 	private Client me = this;       //This client. Passed to server for callback
-	private String fileDir;         //File directory
-	private String fileName;        //File name
 	private String filePath;        //File path
-	private int jobID;              //JobID got from server
+	private String outputFilePath;  //Output file path
+	private long jobID;              //JobID got from server
 	private JobHandler jobHandler;  //JobHandler got from server
 	private int repNum;             //Replication number
 	private int time;               //Time needed
@@ -36,12 +35,12 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	protected ClientImp(int repNum, String filePath, String fileName, int time) throws RemoteException {
+	protected ClientImp(int repNum, String filePath, String outputFilePath, int time) throws RemoteException {
 		super();
+		this.outputFilePath = outputFilePath;
 		this.repNum = repNum;
 		this.filePath = filePath;
 		this.time = time;
-		this.fileName = fileName;
 		isJobDone = false;
 		
 	}
@@ -84,13 +83,11 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 				System.err.println("No file downloaded!");
 				return Message.noFileUploaded;
 			}
-			Directory.makeDir(new File(Parameters.clientResultPath));
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.clientResultPath + "/" + Parameters.resultFileName));
+			
+			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(this.outputFilePath + "/" + Parameters.resultFileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
 			output.close();
-			
-			//TO BE DONE: may need to unzip the file
 			
 			isJobDone.notify(); //Notify that job is done
 		} catch (IOException e) {
@@ -109,7 +106,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	
 	public boolean addJob() {
 		try {
-			jobID = jobHandler.addJob(repNum, me);
+			jobID = jobHandler.addJob(repNum, me, time);
 		} catch (RemoteException e) {
 			System.err.println("Remote exception!");
 			e.printStackTrace();
@@ -140,23 +137,90 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 		//Lookup server binded JobHandler obj
 		//jobHandler.addJob(repNum, fileName) to upload data and start job
 		//master will call downloadResult if finished
-		if (args.length != 3) {
-			System.out.println("Usage: java ClientImp Filepath ReplicationNumer Time");
+		String filePath = ""; //File path
+		String outputFilePath = "";
+		if (args.length != 4) {
+			System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
 			return;
+		} else {
+			if (!args[0].substring(0, 2).equals("-D") && !args[0].substring(0,  2).equals("-P")) {
+				System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
+				return;
+			}
+			//Input is a directory
+			if (args[0].substring(0, 2).equals("-D")) {
+				String directory = args[0].substring(2);
+				File file = new File(directory);
+				if (!file.exists()) {
+					System.out.println("Input file directory doesn't exist!");
+					return;
+				} 
+				if (!file.isDirectory()) {
+					System.out.println("Input file directory is not a directory!");
+					return;
+				}
+				if (!args[1].substring(0, 2).equals("-O")) {
+					System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
+					return;
+				} else {
+					File outFile = new File(args[1].substring(2));
+					System.out.println(outFile.getAbsolutePath());
+					if (!outFile.exists()) {
+						System.out.println("Output file directory doesn't exist!");
+						return;
+					}
+					if (!outFile.isDirectory()) {
+						System.out.println("Output file directory is not a directory!");
+						return;
+					}
+					outputFilePath = outFile.getAbsolutePath();
+				}
+				
+				//Missing some input file
+				if (!FileOperator.checkInput(file)) {
+					return;
+				}
+				
+				if (!FileOperator.zipFile(file)) {
+					return;
+				}
+				filePath = file.getAbsolutePath() + "/" + Parameters.dataFileName;
+			} else { //Input is a zip file
+				String zipFile = args[0].substring(2);
+				File file = new File(zipFile);
+				if (!file.exists()) {
+					System.out.println("Input file doesn't exist!");
+					return;
+				}
+				if (!zipFile.endsWith(".zip")) {
+					System.out.println("Input file should be zipped!");
+					return;
+				}
+				if (!args[1].substring(0, 2).equals("-O")) {
+					System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
+					return;
+				} else {
+					File outFile = new File(args[1].substring(2));
+					if (!outFile.exists()) {
+						System.out.println("Output file directory doesn't exist!");
+						return;
+					}
+					if (!outFile.isDirectory()) {
+						System.out.println("Output file directory is not a directory!");
+						return;
+					}
+					outputFilePath = outFile.getAbsolutePath();
+				}
+				
+				filePath = file.getAbsolutePath();
+			}
 		}
-		File file = new File(args[0]);
-	
-		if (!file.exists()) {
-			System.err.println("File doesn't exist!");
-			return;
-		}
-		String fileName = file.getName();
-		String filePath = args[0];
+
 		int repNum;
 		int time;
 		try {
-			repNum = Integer.parseInt(args[1]);
-			time = Integer.parseInt(args[2]);
+			repNum = Integer.parseInt(args[2]);
+			time = Integer.parseInt(args[3]);
 		} catch (NumberFormatException e) {
 			System.err.println("Please provide valid number!");
 			return;
@@ -171,7 +235,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 		try {
 			Registry registry = LocateRegistry.getRegistry("localhost");
 			JobHandler jobHandler = (JobHandler)registry.lookup(Parameters.jobHandlerName);
-			client = new ClientImp(repNum, filePath, fileName, time);
+			client = new ClientImp(repNum, filePath, outputFilePath, time);
 			client.setJobHandler(jobHandler);
 			if (!client.addJob()) {
 				System.err.println("Add job failure!");
@@ -198,6 +262,11 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 
 }
 
+/**
+ * Thread to read input from client
+ * @author lihao
+ *
+ */
 class ReadInput extends Thread {
 	private ClientImp client;
 	

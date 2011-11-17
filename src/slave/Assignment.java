@@ -18,12 +18,12 @@ import master.JobAssigner;
  */
 public class Assignment extends Thread {
 	private int nodeID;
-	private int jobID;
+	private long jobID;
 	private ArrayList<Integer> repList;
 	private JobAssigner jobAssigner;
 	private static AssignmentHandler assignmentHandler;
 	
-	public Assignment(int nodeID, int jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
+	public Assignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
 		this.jobID = jobID;
 		this.nodeID = nodeID;
 		this.repList = repList;

@@ -32,7 +32,7 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	}
 
 	@Override
-	public int downloadResult(int nodeID, int jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException {
+	public int downloadResult(int nodeID, long jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException {
 		
 		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + repNum);
@@ -70,7 +70,7 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	}
 
 	@Override
-	public byte[] uploadData(int jobID) throws RemoteException {
+	public byte[] uploadData(long jobID) throws RemoteException {
         File file = new File(Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName);
         byte buffer[] = new byte[(int)file.length()];
         

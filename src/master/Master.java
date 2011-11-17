@@ -1,7 +1,10 @@
 package master;
 
+import java.io.File;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+
+import common.FileOperator;
 import common.Parameters;
 
 /**
@@ -10,7 +13,20 @@ import common.Parameters;
  *
  */
 public class Master {
-	public static void main(String[] args) {
+	/**
+	 * Check directory
+	 */
+	public void checkDir() {
+		File file = new File(Parameters.masterDataPath);
+		FileOperator.makeDir(file);
+		file = new File(Parameters.masterResultPath);
+		FileOperator.makeDir(file);
+	}
+	
+	/**
+	 * Start master
+	 */
+	public void start() {
 		/*
 		 * Bind jobHandler, create JobAssigner and assign it to Job
 		 * NodeManager find all available nodes
@@ -22,10 +38,8 @@ public class Master {
 			/*
 			 * Create and bind jobhandler
 			 */
-			//Runtime.getRuntime().exec("rmiregistyr &");
 			String jobHandlerName = Parameters.jobHandlerName;
 			JobHandler jobHandler = new JobHandlerImp();
-			//JobHandler jobHandlerStub = (JobHandler) UnicastRemoteObject.exportObject(jobHandler, 0);
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(jobHandlerName, jobHandler);
 			System.out.println("JobHandler bound");
@@ -36,5 +50,11 @@ public class Master {
 			System.err.println("JobHandler bind exception!");
 			e.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args) {
+		Master master = new Master();
+		master.checkDir();
+		master.start();
 	}
 }

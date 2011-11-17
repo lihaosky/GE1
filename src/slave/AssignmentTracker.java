@@ -8,13 +8,13 @@ import java.util.HashMap;
  *
  */
 public class AssignmentTracker {
-	private static HashMap<Integer, Assignment> assignmentMap = new HashMap<Integer, Assignment>();  //Store map of jobs
+	private static HashMap<Long, Assignment> assignmentMap = new HashMap<Long, Assignment>();  //Store map of jobs
 	
-	public static void addAssignment(int assignID, Assignment assignment) {
+	public static void addAssignment(long assignID, Assignment assignment) {
 		assignmentMap.put(assignID, assignment);
 	}
 	
-	public static Assignment getAssignment(int assignID) {
+	public static Assignment getAssignment(long assignID) {
 		return assignmentMap.get(assignID);
 	}
 }

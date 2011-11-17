@@ -18,7 +18,7 @@ public interface JobHandler extends Remote {
 	 * @return                 Unique jobID to client
 	 * @throws RemoteException
 	 */
-	public int addJob(int repNum, Client client) throws RemoteException;
+	public long addJob(int repNum, Client client, int time) throws RemoteException;
 	
 	/**
 	 * Upload result to client
@@ -31,7 +31,7 @@ public interface JobHandler extends Remote {
 	 * @param jobId
 	 * @throws RemoteException
 	 */
-	public void getJobStatus(int jobId) throws RemoteException;
+	public void getJobStatus(long jobId) throws RemoteException;
 	
 	
 	//Can have other methods like abort job, etc.

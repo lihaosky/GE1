@@ -59,7 +59,7 @@ public class Node {
 		this.repList = repList;
 	}
 	
-	public void addAssignment(int jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
+	public void addAssignment(long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
 		try {
 			setReplist(repList);
 			assignmentHandler.addAssignment(nodeID, jobID, repList, jobAssigner);

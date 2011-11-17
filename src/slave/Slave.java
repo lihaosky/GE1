@@ -1,9 +1,11 @@
 package slave;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import common.FileOperator;
 import common.Parameters;
 
 /**
@@ -12,7 +14,18 @@ import common.Parameters;
  *
  */
 public class Slave {
-	public static void main(String[] args) {
+	/**
+	 * Check directory
+	 */
+	public void checkDir() {
+		File file = new File(Parameters.slaveDataPath);
+		FileOperator.makeDir(file);
+	}
+	
+	/**
+	 * Start slave
+	 */
+	public void start() {
 		//start assignment handler...
 		try {
 			AssignmentHandler assign = new AssignmentHandlerImp();
@@ -23,5 +36,11 @@ public class Slave {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args) {
+		Slave slave = new Slave();
+		slave.checkDir();
+		slave.start();
 	}
 }

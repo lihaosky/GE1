@@ -36,7 +36,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	/**
 	 * Download data from master, get the replication this slave need to do
 	 */
-	public int addAssignment(int nodeID, int jobID, ArrayList<Integer> repList, JobAssigner jobAssigner)
+	public int addAssignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner)
 			throws RemoteException {
 		/*
 		 * Store the file from master
@@ -73,7 +73,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	/**
 	 * Upload result to master
 	 */
-	public byte[] uploadResult(int jobID, int repNum)
+	public byte[] uploadResult(long jobID, int repNum)
 			throws RemoteException {
         File file = new File(Parameters.masterDataPath + "/" + jobID + "/" + repNum + Parameters.resultFileName);
         byte buffer[] = new byte[(int)file.length()];

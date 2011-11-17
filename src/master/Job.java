@@ -3,6 +3,8 @@ package master;
 import java.io.File;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Date;
+
 import client.Client;
 import common.Directory;
 import common.Parameters;
@@ -13,23 +15,28 @@ import common.Parameters;
  *
  */
 public class Job extends Thread {
-	private static int nextJobID = 1;
-	private int jobID;
+	private static long nextJobID = 1;
+	private long jobID;
 	private Client client;
 	private int repNum;
 	private ArrayList<Node> slaveList;
 	private static JobAssigner jobAssigner;
 	//public boolean isJobDone = false;
 	public Object isJobDone = new Object();   //Used to wait for job to be done
+	public int time;
+	public Date startTime;
+	public Date endTime;
+	
 	/**
 	 * Create new Job with number of replications, fileName and client obj
 	 * @param repNum
 	 * @param fileName
 	 * @param client
 	 */
-	public Job(int repNum, Client client) {
+	public Job(int repNum, Client client, int time) {
 		this.repNum = repNum;
 		this.client = client;
+		this.time = time;
 		jobID = getNextJobID();
 	}
 	
@@ -37,7 +44,7 @@ public class Job extends Thread {
 	 * Start the job
 	 */
 	public void start() {
-		ArrayList<Integer> taskList = new ArrayList<Integer>();
+		/*ArrayList<Integer> taskList = new ArrayList<Integer>();
 		for (int i = 1; i <= repNum; i++) {
 			taskList.add(i);
 		}
@@ -59,14 +66,14 @@ public class Job extends Thread {
 			client.downloadResult();
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 	
 	/**
 	 * Get the JobID
 	 * @return
 	 */
-	public int getJobID() {
+	public long getJobID() {
 		return jobID;
 	}
 	
@@ -107,7 +114,7 @@ public class Job extends Thread {
 	 * Get next jobID, this need to be atomic
 	 * @return
 	 */
-	synchronized static int getNextJobID() {
+	synchronized static long getNextJobID() {
 		return nextJobID++;
 	}
 }
