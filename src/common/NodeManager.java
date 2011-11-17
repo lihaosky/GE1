@@ -2,6 +2,11 @@ package common;
 
 import java.util.ArrayList;
 
+/**
+ * Class manage the nodes
+ * @author lihao
+ *
+ */
 public class NodeManager {
 	private static ArrayList<Node> nodeList;
 	
