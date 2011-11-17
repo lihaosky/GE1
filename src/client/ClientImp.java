@@ -30,7 +30,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	private JobHandler jobHandler;  //JobHandler got from server
 	private int repNum;             //Replication number
 	private int time;               //Time needed
-	public boolean isJobDone;      //Is job dnoe
+	public static Object isJobDone = new Object();      //Used to wait for job to be done
 	/**
 	 * 
 	 */
@@ -92,7 +92,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 			
 			//TO BE DONE: may need to unzip the file
 			
-			
+			isJobDone.notify(); //Notify that job is done
 		} catch (IOException e) {
 			System.err.println("Fail to store result file!");
 			e.printStackTrace();
@@ -181,8 +181,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 			ReadInput ri = new ReadInput(client);
 			ri.start();
 			
-			while (!client.isJobDone) {
-			}
+			isJobDone.wait();
 			
 			System.out.println("Job done!");
 			System.exit(0);
