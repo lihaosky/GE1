@@ -31,7 +31,7 @@ public class Node {
 	 * @param status    Node status: Available, Dead or Busy
 	 */
 	public Node(String IPAddress, int status) {
-		nodeID = nextNodeID++;
+		nodeID = getNextNodeID();
 		this.IPAddress = IPAddress;
 		this.status = status;
 	}
@@ -109,5 +109,13 @@ public class Node {
 	 */
 	public int getStatus() {
 		return status;
+	}
+	
+	/**
+	 * Get next nodeID, this needs to be atomic
+	 * @return
+	 */
+	synchronized static int getNextNodeID() {
+		return nextNodeID++;
 	}
 }
