@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import common.Directory;
+import common.FileOperator;
 import common.Message;
 import common.Parameters;
 import slave.AssignmentHandler;
@@ -34,8 +34,9 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	@Override
 	public int downloadResult(int nodeID, long jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException {
 		
-		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
+		FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + repNum);
+		FileOperator.makeDir(file);
 		
 		try {
 			/*

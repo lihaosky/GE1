@@ -11,10 +11,9 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
+import common.FileOperator;
 import common.Message;
 import common.Parameters;
-import common.Directory;
-
 import master.JobAssigner;
 
 /**
@@ -48,10 +47,8 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		}
 		BufferedOutputStream output;
 		try {
-			File dir = new File(Parameters.slaveDataPath);
-			Directory.makeDir(dir);
 			File file = new File(Parameters.slaveDataPath + "/" + jobID);
-			file.mkdir();
+			FileOperator.makeDir(file);
 			output = new BufferedOutputStream(new FileOutputStream(Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName));
 			output.write(bytes,0,bytes.length);
 			output.flush();
@@ -75,12 +72,12 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	 */
 	public byte[] uploadResult(long jobID, int repNum)
 			throws RemoteException {
-        File file = new File(Parameters.masterDataPath + "/" + jobID + "/" + repNum + Parameters.resultFileName);
+        File file = new File(Parameters.slaveDataPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName);
         byte buffer[] = new byte[(int)file.length()];
         
         BufferedInputStream input;
 		try {
-			input = new BufferedInputStream(new FileInputStream(Parameters.masterDataPath + "/" + jobID + "/" + repNum + Parameters.resultFileName));
+			input = new BufferedInputStream(new FileInputStream(Parameters.slaveDataPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName));
 	        input.read(buffer,0,buffer.length);
 	        input.close();
 	        return(buffer);

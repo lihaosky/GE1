@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-import common.Directory;
 import common.Parameters;
 
 import master.JobAssigner;

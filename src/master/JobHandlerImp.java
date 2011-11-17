@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import client.Client;
-import common.Directory;
+import common.FileOperator;
 import common.Message;
 import common.Parameters;
 
@@ -42,8 +42,8 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		 */
 		File dir = new File(Parameters.masterDataPath + "/" + jobID);
 		
-		Directory.makeDir(dir);
-		Directory.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
+		FileOperator.makeDir(dir);
+		FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
 		
 		try {
 			/*
