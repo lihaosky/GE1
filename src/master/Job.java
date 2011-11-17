@@ -5,8 +5,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import client.Client;
 import common.Directory;
-import common.Node;
-import common.NodeManager;
 import common.Parameters;
 
 /**
