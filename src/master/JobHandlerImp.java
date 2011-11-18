@@ -27,6 +27,9 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 
 	/**
 	 * Client add job
+	 * @param repNum Number of replications
+	 * @param client Remote client object. For calling download
+	 * @param time Time limit provide by client
 	 */
 	public long addJob(int repNum, Client client, int time) throws RemoteException {
 		System.out.println("Get client request!");
@@ -74,6 +77,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	
 	/**
 	 * Find job status
+	 * @param jobID JobID
 	 */
 	public void getJobStatus(long jobId) throws RemoteException {
 		

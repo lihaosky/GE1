@@ -20,6 +20,18 @@ public interface AssignmentHandler extends Remote {
 	 * @throws RemoteException
 	 */
 	public int addAssignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) throws RemoteException;
+	/**
+	 * Upload result to master
+	 * @param jobID JobID
+	 * @param repNum Replication number completed
+	 * @return 
+	 * @throws RemoteException
+	 */
 	public byte[] uploadResult(long jobID, int repNum) throws RemoteException;
+	/**
+	 * Add replication to this node in case of other node's failure
+	 * @param repList List of replications added
+	 * @throws RemoteException
+	 */
 	public void addRep(ArrayList<Integer> repList) throws RemoteException;
 }
