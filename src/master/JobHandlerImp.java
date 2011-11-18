@@ -43,7 +43,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		if (!FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID))) {
 			return Message.MkDirError;
 		}
-		if (!FileOperator.cpFile(new File(Parameters.marsOutLocation), new File(Parameters.masterDataPath + "/" + jobID + "/" + "marsOut"))) {
+		if (!FileOperator.cpFile(new File(Parameters.marsOutLocation), new File(Parameters.masterResultPath + "/" + jobID + "/" + "marsOut"))) {
 			return Message.CopyFileError;
 		}
 		/*
