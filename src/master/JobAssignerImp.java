@@ -62,6 +62,7 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 
 	/**
 	 * Upload file to slave
+	 * @param jobID JobID
 	 */
 	public byte[] uploadData(long jobID) throws RemoteException {
 		String filePath = Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
