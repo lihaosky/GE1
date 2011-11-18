@@ -1,12 +1,6 @@
 package slave;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
-
-import common.Parameters;
 
 import master.JobAssigner;
 
@@ -31,12 +25,11 @@ public class Assignment extends Thread {
 	
 	public void start() {
 		for (int i = 0; i < repList.size(); i++) {
-
+			
 		}
 	}
 		
 	public static void setAssignmentHandler(AssignmentHandler assign) {
 		assignmentHandler = assign;
 	}
-
 }

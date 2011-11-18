@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public class FileOperator {
            }
            out.close();
         } catch(Exception e) {
-        	System.err.println("Error when zipping file!");
+        	System.err.println("Zip file error!");
             e.printStackTrace();
             return false;
         }
@@ -126,6 +127,7 @@ public class FileOperator {
 	            is.close();
 	         }
 	      } catch(Exception e) {
+	    	  System.err.println("Unzip file error!");
 	         e.printStackTrace();
 	      }
 		return true;
@@ -161,7 +163,92 @@ public class FileOperator {
 		}
 		if (!dir.mkdir()) {
 			System.out.println("Fail to make directory!");
+			return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Copy file
+	 * @param file1 Original location
+	 * @param file2 New location
+	 */
+	public static boolean cpFile(File file1, File file2) {
+		/*
+        byte buffer[] = new byte[(int)file1.length()];
+        
+        BufferedInputStream input;
+		try {
+			input = new BufferedInputStream(new FileInputStream(file1));
+	        input.read(buffer,0,buffer.length);
+	        input.close();
+	        BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file2));
+			output.write(buffer,0,buffer.length);
+			output.flush();
+			output.close();
+			return true;
+		} catch (FileNotFoundException e) {
+			System.err.println(file1.getName() + " doesn't exist!");
+			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			System.err.println("Error when read file!");
+			e.printStackTrace();
+			return false;
+		}*/
+		try {
+			Runtime.getRuntime().exec("cp " + file1.getAbsolutePath() + " " + file2.getAbsolutePath());
+			return true;
+		} catch (IOException e) {
+			System.out.println("Error when copy file!");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/**
+	 * Store a file
+	 * @param filePath File path
+	 * @param bytes Bytes of file
+	 * @return
+	 */
+	public static boolean storeFile(String filePath, byte[] bytes) {
+		try {
+			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(filePath));
+			output.write(bytes,0,bytes.length);
+			output.flush();
+			output.close();
+			return true;
+		} catch (IOException e) {
+			System.err.println("Fail to store file!");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/**
+	 * Get bytes of the file
+	 * @param filePath File path
+	 * @return Bytes
+	 */
+	public static byte[] getBytes(String filePath) {
+        File file = new File(filePath);
+        byte buffer[] = new byte[(int)file.length()];
+        
+        BufferedInputStream input;
+		try {
+			input = new BufferedInputStream(new FileInputStream(filePath));
+	        input.read(buffer,0,buffer.length);
+	        input.close();
+	        return(buffer);
+		} catch (FileNotFoundException e) {
+			System.err.println("Can't find file!");
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			System.err.println("Error when read file!");
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

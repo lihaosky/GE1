@@ -17,9 +17,14 @@ public class Slave {
 	/**
 	 * Check directory
 	 */
-	public void checkDir() {
+	public boolean checkDirAndFile() {
 		File file = new File(Parameters.slaveDataPath);
 		FileOperator.makeDir(file);
+		file = new File(Parameters.marsMainLocation);
+		if (!file.exists()) {
+			return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -40,7 +45,9 @@ public class Slave {
 	
 	public static void main(String[] args) {
 		Slave slave = new Slave();
-		slave.checkDir();
+		if (!slave.checkDirAndFile()) {
+			return;
+		}
 		slave.start();
 	}
 }

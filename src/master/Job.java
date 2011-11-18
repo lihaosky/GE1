@@ -1,12 +1,9 @@
 package master;
 
-import java.io.File;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 
 import client.Client;
-import common.Parameters;
 
 /**
  * This class represents a job by a client
@@ -66,6 +63,7 @@ public class Job extends Thread {
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}*/
+		System.out.println("Job started!");
 	}
 	
 	/**

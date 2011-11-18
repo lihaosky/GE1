@@ -1,12 +1,6 @@
 package slave;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -43,22 +37,15 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		byte[] bytes = jobAssigner.uploadData(jobID);
 		if (bytes == null) {
 			System.err.println("No file uploaded from master!");
-			return Message.noMasterFileUploaded;
+			return Message.UploadError;
 		}
-		BufferedOutputStream output;
-		try {
-			File file = new File(Parameters.slaveDataPath + "/" + jobID);
-			FileOperator.makeDir(file);
-			output = new BufferedOutputStream(new FileOutputStream(Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName));
-			output.write(bytes,0,bytes.length);
-			output.flush();
-			output.close();
-		} catch (IOException e) {
-			System.err.println("Master file write error!");
-			e.printStackTrace();
-			return Message.storeMasterFileFail;
+		File file = new File(Parameters.slaveDataPath + "/" + jobID);
+		if (!FileOperator.makeDir(file)) {
+			return Message.MkDirError;
 		}
-
+		String filePath = Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+		FileOperator.storeFile(filePath, bytes);
+		
 		//Start the assignment
 		Assignment assignment = new Assignment(nodeID, jobID, repList, jobAssigner);
 		assignment.start();
@@ -72,24 +59,8 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	 */
 	public byte[] uploadResult(long jobID, int repNum)
 			throws RemoteException {
-        File file = new File(Parameters.slaveDataPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName);
-        byte buffer[] = new byte[(int)file.length()];
-        
-        BufferedInputStream input;
-		try {
-			input = new BufferedInputStream(new FileInputStream(Parameters.slaveDataPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName));
-	        input.read(buffer,0,buffer.length);
-	        input.close();
-	        return(buffer);
-		} catch (FileNotFoundException e) {
-			System.err.println("Can't find file to upload!");
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			System.err.println("Error when read file!");
-			e.printStackTrace();
-			return null;
-		}
+		String filePath = Parameters.slaveDataPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName;
+		return FileOperator.getBytes(filePath);
 	}
 
 	/**

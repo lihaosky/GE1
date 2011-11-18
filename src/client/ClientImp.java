@@ -50,52 +50,25 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	 * @param fileName fileName
 	 */
 	public byte[] uploadData() throws RemoteException{
-        File file = new File(filePath);
-        byte buffer[] = new byte[(int)file.length()];
-        
-        BufferedInputStream input;
-		try {
-			input = new BufferedInputStream(new FileInputStream(filePath));
-	        input.read(buffer,0,buffer.length);
-	        input.close();
-	        return(buffer);
-		} catch (FileNotFoundException e) {
-			System.err.println("Can't find file to upload!");
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			System.err.println("Error when read file!");
-			e.printStackTrace();
-			return null;
-		}
+        return FileOperator.getBytes(filePath);
 	}
 	
 	/**
 	 * Download result from master
 	 */
 	public int downloadResult() throws RemoteException {
-		try {
-			/*
-			 * Store the file
-			 */
-			byte[] bytes = jobHandler.uploadResult();
-			if (bytes == null) {
-				System.err.println("No file downloaded!");
-				return Message.noFileUploaded;
-			}
-			
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(this.outputFilePath + "/" + Parameters.resultFileName));
-			output.write(bytes,0,bytes.length);
-			output.flush();
-			output.close();
-			
-			isJobDone.notify(); //Notify that job is done
-		} catch (IOException e) {
-			System.err.println("Fail to store result file!");
-			e.printStackTrace();
-			return Message.storeClientFileFail;
+		/*
+		 * Store the file
+		 */
+		byte[] bytes = jobHandler.uploadResult();
+		if (bytes == null) {
+			System.err.println("No file downloaded!");
+			return Message.DownloadError;
 		}
-		
+		String filep = this.outputFilePath + "/" + Parameters.resultFileName;
+		if (!FileOperator.storeFile(filep, bytes)) {
+			return Message.StoreFileError;
+		}
 		return Message.OK;
 		
 	}
@@ -111,10 +84,11 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 			System.err.println("Remote exception!");
 			e.printStackTrace();
 		}
-		if (jobID == Message.mkDirFail || jobID == Message.noFileUploaded || jobID == Message.storeClientFileFail) {
+		if (jobID == Message.MkDirError || jobID == Message.UploadError || jobID == Message.StoreFileError) {
 			System.err.println("Add job fail!");
 			return false;
 		} 
+		System.out.println("Job added! Your jobID is " + jobID);
 		return true;
 	}
 	
@@ -164,7 +138,6 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 					return;
 				} else {
 					File outFile = new File(args[1].substring(2));
-					System.out.println(outFile.getAbsolutePath());
 					if (!outFile.exists()) {
 						System.out.println("Output file directory doesn't exist!");
 						return;
@@ -211,7 +184,9 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 					}
 					outputFilePath = outFile.getAbsolutePath();
 				}
-				
+				if (!FileOperator.checkInput(file)) {
+					return;
+				}
 				filePath = file.getAbsolutePath();
 			}
 		}
@@ -282,6 +257,8 @@ class ReadInput extends Thread {
 				String i = br.readLine();
 				if (i.equals("status")) {
 					client.checkStatus();
+				} else {
+					System.out.println("Unknown command! Please input again!");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

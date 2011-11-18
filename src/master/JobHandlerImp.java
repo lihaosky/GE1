@@ -1,13 +1,6 @@
 package master;
 
-import java.io.BufferedInputStream;
-
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import client.Client;
@@ -34,6 +27,8 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 
 	
 	public long addJob(int repNum, Client client, int time) throws RemoteException {
+		System.out.println("Get client request!");
+		
 		Job job = new Job(repNum, client, time);    //Create a new job
 		long jobID = job.getJobID();
 	    
@@ -42,30 +37,26 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		 */
 		File dir = new File(Parameters.masterDataPath + "/" + jobID);
 		
-		FileOperator.makeDir(dir);
-		FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
-		
-		try {
-			/*
-			 * Store the file
-			 */
-			byte[] bytes = client.uploadData();
-			if (bytes == null) {
-				System.err.println("No file uploaded!");
-				return Message.noFileUploaded;
-			}
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName));
-			output.write(bytes,0,bytes.length);
-			output.flush();
-			output.close();
-			
-			//TO BE DONE: may need to unzip the file
-			
-			
-		} catch (IOException e) {
-			System.err.println("Fail to store client file!");
-			e.printStackTrace();
-			return Message.storeClientFileFail;
+		if (!FileOperator.makeDir(dir)) {
+			return Message.MkDirError;
+		}
+		if (!FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID))) {
+			return Message.MkDirError;
+		}
+		if (!FileOperator.cpFile(new File(Parameters.marsOutLocation), new File(Parameters.masterDataPath + "/" + jobID + "/" + "marsOut"))) {
+			return Message.CopyFileError;
+		}
+		/*
+		 * Store the file
+		 */
+		byte[] bytes = client.uploadData();
+		if (bytes == null) {
+			System.err.println("No file uploaded!");
+			return Message.UploadError;
+		}
+		String filePath = Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+		if (!FileOperator.storeFile(filePath, bytes)) {
+			return Message.StoreFileError;
 		}
 		
 		job.start();   //Everything goes well, start the job
@@ -83,24 +74,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	 */
 	public byte[] uploadResult() throws RemoteException {
 		String filePath = Parameters.masterResultPath + "/" + Parameters.resultFileName;
-        File file = new File(filePath);
-        byte buffer[] = new byte[(int)file.length()];
-        
-        BufferedInputStream input;
-		try {
-			input = new BufferedInputStream(new FileInputStream(filePath));
-	        input.read(buffer,0,buffer.length);
-	        input.close();
-	        return(buffer);
-		} catch (FileNotFoundException e) {
-			System.err.println("Can't find file to upload!");
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			System.err.println("Error when read file!");
-			e.printStackTrace();
-			return null;
-		}
+		return FileOperator.getBytes(filePath);
 	}
 	
 

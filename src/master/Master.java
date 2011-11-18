@@ -16,11 +16,18 @@ public class Master {
 	/**
 	 * Check directory
 	 */
-	public void checkDir() {
+	public boolean checkDirAndFile() {
 		File file = new File(Parameters.masterDataPath);
 		FileOperator.makeDir(file);
 		file = new File(Parameters.masterResultPath);
 		FileOperator.makeDir(file);
+		file = new File(Parameters.marsOutLocation);
+		if (!file.exists()) {
+			System.out.println("MarsOut doesn't exist!");
+			return false;
+		}
+		return true;
+		
 	}
 	
 	/**
@@ -54,7 +61,9 @@ public class Master {
 	
 	public static void main(String[] args) {
 		Master master = new Master();
-		master.checkDir();
+		if (!master.checkDirAndFile()) {
+			return;
+		}
 		master.start();
 	}
 }

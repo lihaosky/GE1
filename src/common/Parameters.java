@@ -43,5 +43,13 @@ public class Parameters {
 	/**
 	 * Path of marOut
 	 */
-	public static String marsOutLocation = ".";
+	public static String marsOutLocation = "/home/lihao/Desktop/marsOut";
+	/**
+	 * Marsout control file location
+	 */
+	public static String marsOutCtlLocation = ".";
+	/**
+	 * Marsmain control file location
+	 */
+	public static String marsMainCtlLocation = ".";
 }

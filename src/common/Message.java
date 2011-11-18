@@ -2,10 +2,13 @@ package common;
 
 public class Message {
 	public static int OK = 0;
-	public static int mkDirFail = -1;
-	public static int storeClientFileFail = -2;
-	public static int noFileUploaded = -3;
-	public static int noMasterFileUploaded = -4;
-	public static int storeMasterFileFail = -5;
-	public static int storeSlaveFileFail = -6;
+	public static int MkDirError = -1;
+	public static int StoreFileError = -2;
+	public static int UploadError = -3;
+	public static int StoreMasterFileError = -5;
+	public static int StoreSlaveFileFail = -6;
+	public static int DownloadError = -7;
+	public static int UnzipFileError = -8;
+	public static int CopyFileError = -9;
+	
 }
