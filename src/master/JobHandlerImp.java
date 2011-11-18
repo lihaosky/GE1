@@ -25,7 +25,9 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		super();
 	}
 
-	
+	/**
+	 * Client add job
+	 */
 	public long addJob(int repNum, Client client, int time) throws RemoteException {
 		System.out.println("Get client request!");
 		
@@ -65,6 +67,9 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		return job.getJobID();
 	}
 	
+	/**
+	 * Find job status
+	 */
 	public void getJobStatus(long jobId) throws RemoteException {
 		
 	}

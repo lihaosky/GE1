@@ -37,6 +37,10 @@ public class Node {
 		this.status = status;
 	}
 	
+	/**
+	 * Find slave handler
+	 * @return slave handler
+	 */
 	public AssignmentHandler findHandler() {
 		try {
 			Registry registry = LocateRegistry.getRegistry("localhost");
@@ -51,14 +55,28 @@ public class Node {
 		return null;
 	}
 	
+	/**
+	 * Set slave handler
+	 * @param assignmentHandler Assignment Handler
+	 */
 	public void setAssignmentHandler(AssignmentHandler assignmentHandler) {
 		this.assignmentHandler = assignmentHandler;
 	}
 	
+	/**
+	 * Set replication list to slave
+	 * @param repList Replication list
+	 */
 	public void setReplist(ArrayList<Integer> repList) {
 		this.repList = repList;
 	}
 	
+	/**
+	 * Add assignment
+	 * @param jobID JobID
+	 * @param repList Replication list
+	 * @param jobAssigner Job Assigner
+	 */
 	public void addAssignment(long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
 		try {
 			setReplist(repList);
@@ -70,7 +88,7 @@ public class Node {
 	
 	/**
 	 * Get nodeID
-	 * @return
+	 * @return NodeID
 	 */
 	public int getNodeID() {
 		return nodeID;

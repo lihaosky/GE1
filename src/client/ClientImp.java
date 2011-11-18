@@ -35,6 +35,14 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Constructor
+	 * @param repNum Replication number
+	 * @param filePath File path
+	 * @param outputFilePath Output file path
+	 * @param time Time
+	 * @throws RemoteException
+	 */
 	protected ClientImp(int repNum, String filePath, String outputFilePath, int time) throws RemoteException {
 		super();
 		this.outputFilePath = outputFilePath;
@@ -73,10 +81,18 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 		
 	}
 	
+	/**
+	 * Set job handler
+	 * @param jobHandler JobHandler
+	 */
 	public void setJobHandler(JobHandler jobHandler) {
 		this.jobHandler = jobHandler;
 	}
 	
+	/**
+	 * Add job
+	 * @return
+	 */
 	public boolean addJob() {
 		try {
 			jobID = jobHandler.addJob(repNum, me, time);

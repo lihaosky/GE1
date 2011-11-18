@@ -21,6 +21,11 @@ import java.util.zip.ZipOutputStream;
  */
 public class FileOperator {
 
+	/**
+	 * Check client input file, should contain data files
+	 * @param file File
+	 * @return
+	 */
 	public static boolean checkInput(File file) {
 		//Input is directory
 		if (file.isDirectory()) {

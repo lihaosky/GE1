@@ -25,7 +25,9 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 		super();
 	}
 
-	@Override
+	/**
+	 * Download result from slave
+	 */
 	public int downloadResult(int nodeID, long jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException {
 		
 		FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
@@ -58,7 +60,9 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 		return Message.OK;
 	}
 
-	@Override
+	/**
+	 * Upload file to slave
+	 */
 	public byte[] uploadData(long jobID) throws RemoteException {
 		String filePath = Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
 		return FileOperator.getBytes(filePath);
