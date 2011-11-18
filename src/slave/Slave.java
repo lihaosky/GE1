@@ -22,6 +22,12 @@ public class Slave {
 		FileOperator.makeDir(file);
 		file = new File(Parameters.marsMainLocation);
 		if (!file.exists()) {
+			System.out.println("marsMain doesn't exist!");
+			return false;
+		}
+		file = new File(Parameters.marsMainCtlLocation);
+		if (!file.exists()) {
+			System.out.println("marsMain control file doesn't exist!");
 			return false;
 		}
 		return true;
