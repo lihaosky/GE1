@@ -1,5 +1,12 @@
 package common;
 
+/**
+ * Store the parameters
+ * Maybe should be separated...
+ * Maybe get these from configuation file...
+ * @author lihao
+ *
+ */
 public class Parameters {
 	/**
 	 * Directory to store client data in master
