@@ -34,23 +34,28 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		Job job = new Job(repNum, client, time);    //Create a new job
 		long jobID = job.getJobID();
 	    
-		/*
-		 * Make directory according to the unique jobID
-		 */
+	
+		//Make directory according to the unique jobID
 		File dir = new File(Parameters.masterDataPath + "/" + jobID);
 		
+		//Make data directory for this JobID
 		if (!FileOperator.makeDir(dir)) {
 			return Message.MkDirError;
 		}
+		//Make result directory for this JobID
 		if (!FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID))) {
 			return Message.MkDirError;
 		}
+		//Copy marsOut to this JobID
 		if (!FileOperator.cpFile(new File(Parameters.marsOutLocation), new File(Parameters.masterResultPath + "/" + jobID + "/" + "marsOut"))) {
 			return Message.CopyFileError;
 		}
-		/*
-		 * Store the file
-		 */
+		//Copy marsOut control file
+		if (!FileOperator.cpFile(new File(Parameters.marsOutCtlLocation), new File(Parameters.masterResultPath + "/" + jobID + "/" + "mars-out.ctl"))) {
+			return Message.CopyFileError;
+		}
+		
+		//Store the file
 		byte[] bytes = client.uploadData();
 		if (bytes == null) {
 			System.err.println("No file uploaded!");
