@@ -26,6 +26,11 @@ public class Master {
 			System.out.println("MarsOut doesn't exist!");
 			return false;
 		}
+		file = new File(Parameters.marsOutCtlLocation);
+		if (!file.exists()) {
+			System.out.println("MarsOut control file doesn't exist!");
+			return false;
+		}
 		return true;
 		
 	}
