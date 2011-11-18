@@ -47,9 +47,9 @@ public class Parameters {
 	/**
 	 * Marsout control file location
 	 */
-	public static String marsOutCtlLocation = ".";
+	public static String marsOutCtlLocation = "/home/lihao/Desktop/GE_Project/mars-out.ctl";
 	/**
 	 * Marsmain control file location
 	 */
-	public static String marsMainCtlLocation = ".";
+	public static String marsMainCtlLocation = "/home/lihao/Desktop/GE_Project/p1/mars.ctl";
 }
