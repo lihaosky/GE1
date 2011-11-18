@@ -31,18 +31,20 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	 */
 	public int addAssignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner)
 			throws RemoteException {
-		/*
-		 * Store the file from master
-		 */
+		//Make data directory
+		File file = new File(Parameters.slaveDataPath + "/" + jobID);
+		if (!FileOperator.makeDir(file)) {
+			return Message.MkDirError;
+		}
+		
+		//Store the file from master
 		byte[] bytes = jobAssigner.uploadData(jobID);
 		if (bytes == null) {
 			System.err.println("No file uploaded from master!");
 			return Message.UploadError;
 		}
-		File file = new File(Parameters.slaveDataPath + "/" + jobID);
-		if (!FileOperator.makeDir(file)) {
-			return Message.MkDirError;
-		}
+		
+		//Store file
 		String filePath = Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName;
 		FileOperator.storeFile(filePath, bytes);
 		
@@ -70,6 +72,4 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		
 		
 	}
-	
-
 }
