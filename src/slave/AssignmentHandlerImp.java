@@ -45,7 +45,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 		}
 		
 		//Store file
-		String filePath = Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+		String filePath = FileOperator.slaveDataPath(jobID);
 		FileOperator.storeFile(filePath, bytes);
 		
 		//Start the assignment
@@ -61,15 +61,18 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	 */
 	public byte[] uploadResult(long jobID, int repNum)
 			throws RemoteException {
-		String filePath = Parameters.slaveDataPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName;
+		String filePath = FileOperator.slaveResultPath(jobID, repNum);
+		System.out.println(filePath);
+		File file = new File(filePath);
+		System.out.println(file.length());
 		return FileOperator.getBytes(filePath);
 	}
 
 	/**
 	 * Add new replications in case of other's failure
 	 */
-	public void addRep(ArrayList<Integer> repList) throws RemoteException {
-		
-		
+	public void addRep(long jobID, ArrayList<Integer> repList) throws RemoteException {
+		Assignment assignment = AssignmentTracker.getAssignment(jobID);
+		assignment.addRep(repList);
 	}
 }

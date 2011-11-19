@@ -33,10 +33,8 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	 */
 	public long addJob(int repNum, Client client, int time) throws RemoteException {
 		System.out.println("Get client request!");
-		
 		Job job = new Job(repNum, client, time);    //Create a new job
 		long jobID = job.getJobID();
-	    
 	
 		//Make directory according to the unique jobID
 		File dir = new File(Parameters.masterDataPath + "/" + jobID);
@@ -58,6 +56,11 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 			return Message.CopyFileError;
 		}
 		
+		/**********************************************
+		 * NEED TO EDIT THE mars-out.ctl              *
+		 *********************************************/
+		
+		
 		//Store the file
 		byte[] bytes = client.uploadData();
 		if (bytes == null) {
@@ -68,9 +71,12 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		if (!FileOperator.storeFile(filePath, bytes)) {
 			return Message.StoreFileError;
 		}
-		
-		job.start();   //Everything goes well, start the job
+		System.out.println("Job " + jobID + " started!");
 		JobTracker.addJob(jobID, job);   //Add the job to job tracker
+		job.start();   //Everything goes well, start the job
+
+		System.out.println("Here!");
+		
 		
 		return job.getJobID();
 	}

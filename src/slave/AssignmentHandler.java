@@ -33,5 +33,5 @@ public interface AssignmentHandler extends Remote {
 	 * @param repList List of replications added
 	 * @throws RemoteException
 	 */
-	public void addRep(ArrayList<Integer> repList) throws RemoteException;
+	public void addRep(long jodID, ArrayList<Integer> repList) throws RemoteException;
 }

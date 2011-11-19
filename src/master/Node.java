@@ -35,16 +35,18 @@ public class Node {
 		nodeID = getNextNodeID();
 		this.IPAddress = IPAddress;
 		this.status = status;
+		repList = new ArrayList<Integer>();
 	}
 	
 	/**
 	 * Find slave handler
 	 * @return slave handler
 	 */
-	public AssignmentHandler findHandler() {
+	public boolean findHandler() {
 		try {
 			Registry registry = LocateRegistry.getRegistry("localhost");
 			assignmentHandler = (AssignmentHandler)registry.lookup(Parameters.slaveHandlerName);
+			return true;
 		} catch (AccessException e) {
 			e.printStackTrace();
 		} catch (RemoteException e) {
@@ -52,7 +54,7 @@ public class Node {
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return false;
 	}
 	
 	/**
@@ -67,8 +69,16 @@ public class Node {
 	 * Set replication list to slave
 	 * @param repList Replication list
 	 */
-	public void setReplist(ArrayList<Integer> repList) {
+	synchronized public void setReplist(ArrayList<Integer> repList) {
 		this.repList = repList;
+	}
+	
+	/**
+	 * Set the status of node
+	 * @param status
+	 */
+	public void setStatus(int status) {
+		this.status = status;
 	}
 	
 	/**
@@ -77,13 +87,15 @@ public class Node {
 	 * @param repList Replication list
 	 * @param jobAssigner Job Assigner
 	 */
-	public void addAssignment(long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
+	public int addAssignment(long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
+		int val = 0;
 		try {
 			setReplist(repList);
-			assignmentHandler.addAssignment(nodeID, jobID, repList, jobAssigner);
+			val = assignmentHandler.addAssignment(nodeID, jobID, repList, jobAssigner);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+		return val;
 	}
 	
 	/**
@@ -98,12 +110,27 @@ public class Node {
 	 * Remove a replication from this node when it is done
 	 * @param repNum
 	 */
-	public void removeRep(int repNum) {
+	synchronized public void removeRep(int repNum) {
 		for (int i = 0; i < repList.size(); i++) {
 			if (repList.get(i) == repNum) {
 				repList.remove(i);
 			}
 		}
+	}
+	
+	/**
+	 * Add replication to this node
+	 * @param repNum
+	 */
+	synchronized public void addRep(int repNum) {
+		repList.add(repNum);
+	}
+	
+	/**
+	 * Clear the replication list of this node
+	 */
+	synchronized public void clearRep() {
+		repList = new ArrayList<Integer>();
 	}
 	
 	/**

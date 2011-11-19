@@ -63,7 +63,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 		/*
 		 * Store the file
 		 */
-		byte[] bytes = jobHandler.uploadResult();
+		/*byte[] bytes = jobHandler.uploadResult();
 		if (bytes == null) {
 			System.err.println("No file downloaded!");
 			return Message.DownloadError;
@@ -71,6 +71,10 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 		String filep = this.outputFilePath + "/" + Parameters.resultFileName;
 		if (!FileOperator.storeFile(filep, bytes)) {
 			return Message.StoreFileError;
+		}*/
+		System.out.println("Job is done");
+		synchronized(isJobDone) {
+			isJobDone.notify();
 		}
 		return Message.OK;
 		
@@ -230,9 +234,9 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 			
 			ReadInput ri = new ReadInput(client);
 			ri.start();
-			
-			isJobDone.wait();
-			
+			synchronized(isJobDone) {
+				isJobDone.wait();
+			}
 			System.out.println("Job done!");
 			System.exit(0);
 			
@@ -260,7 +264,7 @@ class ReadInput extends Thread {
 		this.client = client;
 	}
 	
-	public void start() {
+	public void run() {
 		System.out.println("To check the job status, type \"status\"");
 		while (true) {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

@@ -15,7 +15,7 @@ public class AssignmentTracker {
 	 * @param assignID AssignmentID. Same as JobID
 	 * @param assignment Assignment
 	 */
-	public static void addAssignment(long assignID, Assignment assignment) {
+	synchronized public static void addAssignment(long assignID, Assignment assignment) {
 		assignmentMap.put(assignID, assignment);
 	}
 	
@@ -24,7 +24,7 @@ public class AssignmentTracker {
 	 * @param assignID AssignmentID
 	 * @return
 	 */
-	public static Assignment getAssignment(long assignID) {
+	synchronized public static Assignment getAssignment(long assignID) {
 		return assignmentMap.get(assignID);
 	}
 }

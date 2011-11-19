@@ -22,10 +22,15 @@ public class NodeManager {
 	 * Get n nodes
 	 * @param n number of nodes to get
 	 */
-	public static ArrayList<Node> getNodes(int n) {
+	synchronized public static ArrayList<Node> getNodes(int n) {
 		ArrayList<Node> newList = new ArrayList<Node>();
 		Node node = new Node("locahost", Node.AVAILABLE);
-		node.findHandler();
+		if (!node.findHandler()) {
+			System.out.println("Find handler error!");
+			node.setStatus(Node.DEAD);
+			return null;
+		}
+		node.setStatus(Node.BUSY);
 		newList.add(node);
 		return newList;
 	}

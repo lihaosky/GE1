@@ -118,7 +118,7 @@ public class FileOperator {
 	         Enumeration<? extends ZipEntry> e = zipfile.entries();
 	         while(e.hasMoreElements()) {
 	            entry = (ZipEntry) e.nextElement();
-	            System.out.println("Extracting: " +entry);
+	           // System.out.println("Extracting: " +entry);
 	            is = new BufferedInputStream(zipfile.getInputStream(entry));
 	            int count;
 	            byte data[] = new byte[BUFFER];
@@ -202,10 +202,14 @@ public class FileOperator {
 			return false;
 		}*/
 		try {
-			Runtime.getRuntime().exec("cp " + file1.getAbsolutePath() + " " + file2.getAbsolutePath());
+			Process p = Runtime.getRuntime().exec("cp " + file1.getAbsolutePath() + " " + file2.getAbsolutePath());
+			p.waitFor();
 			return true;
 		} catch (IOException e) {
 			System.out.println("Error when copy file!");
+			e.printStackTrace();
+			return false;
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -255,5 +259,63 @@ public class FileOperator {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	/**
+	 * Get data file path of jobID in slave
+	 * @param jobID JobID
+	 * @return Slave data file path of jobID
+	 */
+	public static String slaveDataPath(long jobID) {
+		return Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+	}
+	
+	/**
+	 * Get replication directory path of rep of jobID
+	 * @param jobID JobID
+	 * @param rep Replication number
+	 * @return Slave path of replication number rep
+	 */
+	public static String slaveRepPath(long jobID, int rep) {
+		return Parameters.slaveDataPath + "/" + jobID + "/" + rep;
+	}
+	
+	/**
+	 * Get result file path of rep of jobID
+	 * @param jobID JobID
+	 * @param rep Replication number
+	 * @return Slave result file path of replication number rep
+	 */
+	public static String slaveResultPath(long jobID, int rep) {
+		return FileOperator.slaveRepPath(jobID, rep) + "/" + Parameters.resultFileName;
+	}
+	
+	/**
+	 * Get data file path of jobID in master
+	 * @param jobID JobID
+	 * @return Master data file path of jobID
+	 */
+	public static String masterDataPath(long jobID) {
+		return Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+	}
+	
+	/**
+	 * Get replication directory path of rep of jobID
+	 * @param jobID JobID
+	 * @param rep Replication number
+	 * @return Master path of replication number rep
+	 */
+	public static String masterRepPath(long jobID, int rep) {
+		return Parameters.masterResultPath + "/" + jobID + "/" + rep;
+	}
+	
+	/**
+	 * Get result file path of rep of jobID
+	 * @param jobID JobID
+	 * @param rep Replication number
+	 * @return Result file path of replication number rep
+	 */
+	public static String masterResultPath(long jobID, int rep) {
+		return FileOperator.masterRepPath(jobID, rep) + "/" + Parameters.resultFileName;
 	}
 }

@@ -31,23 +31,26 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	public int downloadResult(int nodeID, long jobID, int repNum, AssignmentHandler assignmentHandler) throws RemoteException {
 		
 		FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID));
-		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + repNum);
+		File file = new File(FileOperator.masterRepPath(jobID, repNum));
 		FileOperator.makeDir(file);
 		
 		/*
 		 * Store the file
 		 */
 		byte[] bytes = assignmentHandler.uploadResult(jobID, repNum);
+		
 		if (bytes == null) {
 			System.err.println("No file uploaded!");
 			return Message.UploadError;
 		}
-		String filePath = Parameters.masterResultPath + "/" + jobID + "/" + repNum + "/" + Parameters.resultFileName;
+		
+		String filePath = FileOperator.masterResultPath(jobID, repNum);
 		if (!FileOperator.storeFile(filePath, bytes)) {
 			return Message.StoreFileError;
 		}
-		//TO BE DONE: may need to unzip the file
-		if (!FileOperator.unzipFile(new File(filePath), Parameters.masterResultPath + "/" + jobID + "/" + repNum)) {
+		System.out.println("result path: " + filePath);
+		//Unzip the file
+		if (!FileOperator.unzipFile(new File(filePath), FileOperator.masterRepPath(jobID, repNum))) {
 			return Message.UnzipFileError;
 		}
 		
@@ -55,7 +58,9 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 		job.updateRepList(nodeID, repNum);
 		
 		if (job.checkNodeStatus()) {
-			job.isJobDone.notify();   //Notify that job is done
+			synchronized(job.isJobDone) {
+				job.isJobDone.notify();   //Notify that job is done
+			}
 		}
 		return Message.OK;
 	}
@@ -65,8 +70,7 @@ public class JobAssignerImp extends UnicastRemoteObject implements JobAssigner {
 	 * @param jobID JobID
 	 */
 	public byte[] uploadData(long jobID) throws RemoteException {
-		String filePath = Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
-		return FileOperator.getBytes(filePath);
+		return FileOperator.getBytes(FileOperator.masterDataPath(jobID));
 	}
 
 }

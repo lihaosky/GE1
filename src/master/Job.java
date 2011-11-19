@@ -1,7 +1,10 @@
 package master;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
+
+import common.Message;
 
 import client.Client;
 
@@ -34,36 +37,47 @@ public class Job extends Thread {
 		this.client = client;
 		this.time = time;
 		jobID = getNextJobID();
+	//	this.isJobDone = isJobDone;
 	}
 	
 	/**
 	 * Start the job
 	 */
-	public void start() {
-		/*ArrayList<Integer> taskList = new ArrayList<Integer>();
+	public void run() {
+		slaveList = NodeManager.getNodes(1);
+		if (slaveList == null) {
+			System.out.println("Can't get slave!");
+			return;
+		}
+		
+		ArrayList<Integer> taskList = new ArrayList<Integer>();
 		for (int i = 1; i <= repNum; i++) {
 			taskList.add(i);
 		}
-		File dir = new File(Parameters.masterResultPath);
-		Directory.makeDir(dir);
-		slaveList = NodeManager.getNodes(1);
-		slaveList.get(0).setReplist(taskList);
-		slaveList.get(0).addAssignment(jobID, taskList, jobAssigner);
+
+		if (slaveList.get(0).addAssignment(jobID, taskList, jobAssigner) != Message.OK) {
+			System.out.println("Add assignment to slave error!");
+			slaveList.get(0).clearRep();
+		}
+		
+		System.out.println("Job " + jobID + " started in slaves!");
 		
 		try {
-			isJobDone.wait();
+			synchronized(isJobDone) {
+				isJobDone.wait();
+			}
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
 		
+		System.out.println("Job is done!");
 		//MERGE RESULT: TO BE DONE
 		
 		try {
 			client.downloadResult();
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		}*/
-		System.out.println("Job started!");
+		}
 	}
 	
 	/**
@@ -76,9 +90,10 @@ public class Job extends Thread {
 	
 	/**
 	 * Update the repList when result is fetched
-	 * @param repNum
+	 * @param nodeID NodeID which needs update
+	 * @param repNum Replication number to be removed
 	 */
-	public void updateRepList(int nodeID, int repNum) {
+	synchronized public void updateRepList(int nodeID, int repNum) {
 		for (int i = 0; i < slaveList.size(); i++) {
 			if (slaveList.get(i).getNodeID() == nodeID) {
 				slaveList.get(i).removeRep(repNum);
