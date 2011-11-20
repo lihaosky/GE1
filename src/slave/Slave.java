@@ -6,7 +6,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import common.FileOperator;
-import common.Parameters;
 
 /**
  * Starts the slave
@@ -18,14 +17,14 @@ public class Slave {
 	 * Check directory
 	 */
 	public boolean checkDirAndFile() {
-		File file = new File(Parameters.slaveDataPath);
+		File file = new File(slave.Parameters.slaveDataPath);
 		FileOperator.makeDir(file);
-		file = new File(Parameters.marsMainLocation);
+		file = new File(slave.Parameters.marsMainLocation);
 		if (!file.exists()) {
 			System.out.println("marsMain doesn't exist!");
 			return false;
 		}
-		file = new File(Parameters.marsMainCtlLocation);
+		file = new File(slave.Parameters.marsMainCtlLocation);
 		if (!file.exists()) {
 			System.out.println("marsMain control file doesn't exist!");
 			return false;
@@ -41,7 +40,7 @@ public class Slave {
 		try {
 			AssignmentHandler assign = new AssignmentHandlerImp();
 			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind(Parameters.slaveHandlerName, assign);
+			registry.rebind(common.Parameters.slaveHandlerName, assign);
 			Assignment.setAssignmentHandler(assign);
 			System.out.println("AssignmentHandler bound!");
 		} catch (IOException e) {
@@ -50,6 +49,11 @@ public class Slave {
 	}
 	
 	public static void main(String[] args) {
+		try {
+			Class.forName("slave.Parameters");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		Slave slave = new Slave();
 		if (!slave.checkDirAndFile()) {
 			return;
