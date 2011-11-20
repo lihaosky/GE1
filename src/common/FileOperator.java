@@ -267,7 +267,7 @@ public class FileOperator {
 	 * @return Slave data file path of jobID
 	 */
 	public static String slaveDataPath(long jobID) {
-		return Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+		return slave.Parameters.slaveDataPath + "/" + jobID + "/" + Parameters.dataFileName;
 	}
 	
 	/**
@@ -277,7 +277,7 @@ public class FileOperator {
 	 * @return Slave path of replication number rep
 	 */
 	public static String slaveRepPath(long jobID, int rep) {
-		return Parameters.slaveDataPath + "/" + jobID + "/" + rep;
+		return slave.Parameters.slaveDataPath + "/" + jobID + "/" + rep;
 	}
 	
 	/**
@@ -296,7 +296,7 @@ public class FileOperator {
 	 * @return Master data file path of jobID
 	 */
 	public static String masterDataPath(long jobID) {
-		return Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+		return master.Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
 	}
 	
 	/**
@@ -306,7 +306,7 @@ public class FileOperator {
 	 * @return Master path of replication number rep
 	 */
 	public static String masterRepPath(long jobID, int rep) {
-		return Parameters.masterResultPath + "/" + jobID + "/" + rep;
+		return master.Parameters.masterResultPath + "/" + jobID + "/" + rep;
 	}
 	
 	/**
