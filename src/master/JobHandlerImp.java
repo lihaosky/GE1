@@ -6,7 +6,6 @@ import java.rmi.server.UnicastRemoteObject;
 import client.Client;
 import common.FileOperator;
 import common.Message;
-import common.Parameters;
 
 /**
  * Handle client job request
@@ -37,22 +36,22 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 		long jobID = job.getJobID();
 	
 		//Make directory according to the unique jobID
-		File dir = new File(Parameters.masterDataPath + "/" + jobID);
+		File dir = new File(master.Parameters.masterDataPath + "/" + jobID);
 		
 		//Make data directory for this JobID
 		if (!FileOperator.makeDir(dir)) {
 			return Message.MkDirError;
 		}
 		//Make result directory for this JobID
-		if (!FileOperator.makeDir(new File(Parameters.masterResultPath + "/" + jobID))) {
+		if (!FileOperator.makeDir(new File(master.Parameters.masterResultPath + "/" + jobID))) {
 			return Message.MkDirError;
 		}
 		//Copy marsOut to this JobID
-		if (!FileOperator.cpFile(new File(Parameters.marsOutLocation), new File(Parameters.masterResultPath + "/" + jobID + "/" + "marsOut"))) {
+		if (!FileOperator.cpFile(new File(master.Parameters.marsOutLocation), new File(master.Parameters.masterResultPath + "/" + jobID + "/" + "marsOut"))) {
 			return Message.CopyFileError;
 		}
 		//Copy marsOut control file
-		if (!FileOperator.cpFile(new File(Parameters.marsOutCtlLocation), new File(Parameters.masterResultPath + "/" + jobID + "/" + "mars-out.ctl"))) {
+		if (!FileOperator.cpFile(new File(master.Parameters.marsOutCtlLocation), new File(master.Parameters.masterResultPath + "/" + jobID + "/" + "mars-out.ctl"))) {
 			return Message.CopyFileError;
 		}
 		
@@ -67,7 +66,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 			System.err.println("No file uploaded!");
 			return Message.UploadError;
 		}
-		String filePath = Parameters.masterDataPath + "/" + jobID + "/" + Parameters.dataFileName;
+		String filePath = master.Parameters.masterDataPath + "/" + jobID + "/" + common.Parameters.dataFileName;
 		if (!FileOperator.storeFile(filePath, bytes)) {
 			return Message.StoreFileError;
 		}
@@ -93,7 +92,7 @@ public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
 	 * Upload result to client
 	 */
 	public byte[] uploadResult() throws RemoteException {
-		String filePath = Parameters.masterResultPath + "/" + Parameters.resultFileName;
+		String filePath = master.Parameters.masterResultPath + "/" + common.Parameters.resultFileName;
 		return FileOperator.getBytes(filePath);
 	}
 	
