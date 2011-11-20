@@ -5,8 +5,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import common.FileOperator;
-import common.Parameters;
-
 import master.JobAssigner;
 
 /**
@@ -51,8 +49,8 @@ public class Assignment extends Thread {
 			FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep));
 			
 			//Copy marsMain to replication directory
-			FileOperator.cpFile(new File(Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"));
-			FileOperator.cpFile(new File(Parameters.marsMainCtlLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"));
+			FileOperator.cpFile(new File(slave.Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"));
+			FileOperator.cpFile(new File(slave.Parameters.marsMainCtlLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"));
 			
 			/*********************************************
 			 * NEED TO EDIT mars.ctl                     *

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import common.FileOperator;
 import common.Message;
-import common.Parameters;
 import master.JobAssigner;
 
 /**
@@ -32,7 +31,7 @@ public class AssignmentHandlerImp extends UnicastRemoteObject implements Assignm
 	public int addAssignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner)
 			throws RemoteException {
 		//Make data directory
-		File file = new File(Parameters.slaveDataPath + "/" + jobID);
+		File file = new File(slave.Parameters.slaveDataPath + "/" + jobID);
 		if (!FileOperator.makeDir(file)) {
 			return Message.MkDirError;
 		}
