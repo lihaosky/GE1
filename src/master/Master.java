@@ -5,7 +5,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import common.FileOperator;
-import common.Parameters;
 
 /**
  * Starts the master
@@ -17,16 +16,16 @@ public class Master {
 	 * Check directory
 	 */
 	public boolean checkDirAndFile() {
-		File file = new File(Parameters.masterDataPath);
+		File file = new File(master.Parameters.masterDataPath);
 		FileOperator.makeDir(file);
-		file = new File(Parameters.masterResultPath);
+		file = new File(master.Parameters.masterResultPath);
 		FileOperator.makeDir(file);
-		file = new File(Parameters.marsOutLocation);
+		file = new File(master.Parameters.marsOutLocation);
 		if (!file.exists()) {
 			System.out.println("MarsOut doesn't exist!");
 			return false;
 		}
-		file = new File(Parameters.marsOutCtlLocation);
+		file = new File(master.Parameters.marsOutCtlLocation);
 		if (!file.exists()) {
 			System.out.println("MarsOut control file doesn't exist!");
 			return false;
@@ -50,7 +49,7 @@ public class Master {
 			/*
 			 * Create and bind jobhandler
 			 */
-			String jobHandlerName = Parameters.jobHandlerName;
+			String jobHandlerName = common.Parameters.jobHandlerName;
 			JobHandler jobHandler = new JobHandlerImp();
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(jobHandlerName, jobHandler);
@@ -65,6 +64,11 @@ public class Master {
 	}
 	
 	public static void main(String[] args) {
+		try {
+			Class.forName("master.Parameters");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		Master master = new Master();
 		if (!master.checkDirAndFile()) {
 			return;
