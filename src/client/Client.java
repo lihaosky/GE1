@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 
 /**
  * Remote interface for master to download data and send result to client
- * @author lihao
+ * @author liha
  *
  */
 public interface Client extends Remote {
