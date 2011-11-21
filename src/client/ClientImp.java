@@ -11,8 +11,6 @@ import java.rmi.server.UnicastRemoteObject;
 
 import common.FileOperator;
 import common.Message;
-import common.Parameters;
-
 import master.JobHandler;
 
 public class ClientImp extends UnicastRemoteObject implements Client{
@@ -122,6 +120,11 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		try {
+			Class.forName("client.Parameters");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
 		//Get input directory and number of replications
 		//Lookup server binded JobHandler obj
 		//jobHandler.addJob(repNum, fileName) to upload data and start job
@@ -132,6 +135,10 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 			System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
 			return;
 		} else {
+			if (args[0].length() < 3 || args[1].length() < 3) {
+				System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
+				return;
+			}
 			if (!args[0].substring(0, 2).equals("-D") && !args[0].substring(0,  2).equals("-P")) {
 				System.out.println("Usage: java ClientImp [-DfileDirectory | -Pfilepath] [-OoutputDirectory] ReplicationNumer Time");
 				return;
@@ -172,7 +179,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 				if (!FileOperator.zipFile(file)) {
 					return;
 				}
-				filePath = file.getAbsolutePath() + "/" + Parameters.dataFileName;
+				filePath = file.getAbsolutePath() + "/" + common.Parameters.dataFileName;
 			} else { //Input is a zip file
 				String zipFile = args[0].substring(2);
 				File file = new File(zipFile);
@@ -216,23 +223,28 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 			return;
 		}
 		
-		ClientImp client;
+		ClientImp clientObj;
 		
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new SecurityManager());
 		}
 		
 		try {
-			Registry registry = LocateRegistry.getRegistry("localhost");
-			JobHandler jobHandler = (JobHandler)registry.lookup(Parameters.jobHandlerName);
-			client = new ClientImp(repNum, filePath, outputFilePath, time);
-			client.setJobHandler(jobHandler);
-			if (!client.addJob()) {
+			System.out.println("Master host is " + client.Parameters.masterHost);
+			Registry registry = LocateRegistry.getRegistry(client.Parameters.masterHost);
+			System.out.println("Here1");
+			System.out.println(System.getProperty("java.rmi.server.hostname"));
+			JobHandler jobHandler = (JobHandler)registry.lookup(common.Parameters.jobHandlerName);
+			System.out.println("Here");
+
+			clientObj = new ClientImp(repNum, filePath, outputFilePath, time);
+			clientObj.setJobHandler(jobHandler);
+			if (!clientObj.addJob()) {
 				System.err.println("Add job failure!");
 				return;
 			}
 			
-			ReadInput ri = new ReadInput(client);
+			ReadInput ri = new ReadInput(clientObj);
 			ri.start();
 			synchronized(isJobDone) {
 				isJobDone.wait();
