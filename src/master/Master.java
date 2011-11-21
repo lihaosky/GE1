@@ -3,6 +3,7 @@ package master;
 import java.io.File;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 import common.FileOperator;
 
@@ -51,8 +52,9 @@ public class Master {
 			 */
 			String jobHandlerName = common.Parameters.jobHandlerName;
 			JobHandler jobHandler = new JobHandlerImp();
+			JobHandler jobHandlerStub = (JobHandler)UnicastRemoteObject.exportObject(jobHandler, 1234);
 			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind(jobHandlerName, jobHandler);
+			registry.rebind(jobHandlerName, jobHandlerStub);
 			System.out.println("JobHandler bound");
 			
 			JobAssigner jobAssigner = new JobAssignerImp();

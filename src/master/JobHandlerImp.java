@@ -2,7 +2,6 @@ package master;
 
 import java.io.File;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import client.Client;
 import common.FileOperator;
 import common.Message;
@@ -12,13 +11,7 @@ import common.Message;
  * @author lihao
  *
  */
-public class JobHandlerImp extends UnicastRemoteObject implements JobHandler {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
+public class JobHandlerImp implements JobHandler {
 
 	protected JobHandlerImp() throws RemoteException {
 		super();

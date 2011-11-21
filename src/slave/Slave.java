@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 import common.FileOperator;
 
@@ -39,8 +40,9 @@ public class Slave {
 		//start assignment handler...
 		try {
 			AssignmentHandler assign = new AssignmentHandlerImp();
+			AssignmentHandler assignStub = (AssignmentHandler)UnicastRemoteObject.exportObject(assign, 1234);
 			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind(common.Parameters.slaveHandlerName, assign);
+			registry.rebind(common.Parameters.slaveHandlerName, assignStub);
 			Assignment.setAssignmentHandler(assign);
 			System.out.println("AssignmentHandler bound!");
 		} catch (IOException e) {

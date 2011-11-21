@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,7 +14,7 @@ import common.FileOperator;
 import common.Message;
 import master.JobHandler;
 
-public class ClientImp extends UnicastRemoteObject implements Client{
+public class ClientImp implements Client{
 	
 	private Client me = this;       //This client. Passed to server for callback
 	private String filePath;        //File path
@@ -120,6 +121,11 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		try {
+			System.out.println(java.net.InetAddress.getLocalHost());
+		} catch (UnknownHostException e2) {
+			e2.printStackTrace();
+		}
 		try {
 			Class.forName("client.Parameters");
 		} catch (ClassNotFoundException e1) {
@@ -239,6 +245,7 @@ public class ClientImp extends UnicastRemoteObject implements Client{
 
 			clientObj = new ClientImp(repNum, filePath, outputFilePath, time);
 			clientObj.setJobHandler(jobHandler);
+			UnicastRemoteObject.exportObject(clientObj, 1234);
 			if (!clientObj.addJob()) {
 				System.err.println("Add job failure!");
 				return;

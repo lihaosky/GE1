@@ -14,7 +14,7 @@ import master.JobAssigner;
  * @author lihao
  *
  */
-public class AssignmentHandlerImp extends UnicastRemoteObject implements AssignmentHandler {
+public class AssignmentHandlerImp implements AssignmentHandler {
 
 	/**
 	 * 
