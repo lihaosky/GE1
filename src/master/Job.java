@@ -1,12 +1,16 @@
 package master;
 
-import java.rmi.RemoteException;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 
+import common.Command;
+import common.DownloadCommand;
+import common.FileOperator;
 import common.Message;
-
-import client.Client;
 
 /**
  * This class represents a job by a client
@@ -16,11 +20,9 @@ import client.Client;
 public class Job extends Thread {
 	private static long nextJobID = 1;
 	private long jobID;
-	private Client client;
+	private Socket clientSocket;
 	private int repNum;
 	private ArrayList<Node> slaveList;
-	private static JobAssigner jobAssigner;
-	//public boolean isJobDone = false;
 	public Object isJobDone = new Object();   //Used to wait for job to be done
 	public int time;
 	public Date startTime;
@@ -32,10 +34,10 @@ public class Job extends Thread {
 	 * @param fileName
 	 * @param client
 	 */
-	public Job(int repNum, Client client, int time) {
+	public Job(int repNum, Socket clientSocket, int time) {
 		this.repNum = repNum;
-		this.client = client;
 		this.time = time;
+		this.clientSocket = clientSocket;
 		jobID = getNextJobID();
 	//	this.isJobDone = isJobDone;
 	}
@@ -55,9 +57,12 @@ public class Job extends Thread {
 			taskList.add(i);
 		}
 
-		if (slaveList.get(0).addAssignment(jobID, taskList, jobAssigner) != Message.OK) {
+		if (slaveList.get(0).addAssignment(jobID, taskList) != Message.OK) {
 			System.out.println("Add assignment to slave error!");
 			slaveList.get(0).clearRep();
+			return;
+		} else {
+			slaveList.get(0).start();
 		}
 		
 		System.out.println("Job " + jobID + " started in slaves!");
@@ -71,12 +76,22 @@ public class Job extends Thread {
 		}
 		
 		System.out.println("Job is done!");
+		
+		
 		//MERGE RESULT: TO BE DONE
 		
+		//Upload result to client
+		File file = new File(Parameters.masterResultPath + "/" + common.Parameters.resultFileName);
+		long fileLength = file.length();
 		try {
-			client.downloadResult();
-		} catch (RemoteException e) {
+			ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+			oos.writeObject(new DownloadCommand(Command.DownloadCommand, fileLength));
+		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		if (!FileOperator.uploadFile(clientSocket, file.getAbsolutePath(), fileLength)) {
+			System.out.println("Upload result to client error!");
 		}
 	}
 	
@@ -115,18 +130,14 @@ public class Job extends Thread {
 	}
 	
 	/**
-	 * Set the job assigner for master
-	 * @param jobAgn job assigner
-	 */
-	public static void setJobAssigner(JobAssigner jobAgn) {
-		Job.jobAssigner = jobAgn;
-	}
-	
-	/**
 	 * Get next jobID, this need to be atomic
 	 * @return
 	 */
 	synchronized static long getNextJobID() {
 		return nextJobID++;
+	}
+	
+	public int getFinishedRep() {
+		return 4;
 	}
 }

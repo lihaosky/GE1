@@ -25,8 +25,8 @@ public class NodeManager {
 	synchronized public static ArrayList<Node> getNodes(int n) {
 		ArrayList<Node> newList = new ArrayList<Node>();
 		Node node = new Node("locahost", Node.AVAILABLE);
-		if (!node.findHandler()) {
-			System.out.println("Find handler error!");
+		if (node.connect() == null) {
+			System.out.println("Find slave error!");
 			node.setStatus(Node.DEAD);
 			return null;
 		}

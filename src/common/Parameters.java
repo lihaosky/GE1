@@ -30,4 +30,12 @@ public class Parameters {
 	 * Needed input files from client
 	 */
 	public static String[] neededInputFiles = {"mars.in02", "mars.in05", "mars.in17", "MARS-LIC"};
+	/**
+	 * Server port number
+	 */
+	public static int serverPort = 1234;
+	/**
+	 * Slave port number
+	 */
+	public static int slavePort = 1099;
 }

@@ -1,26 +1,32 @@
 package master;
 
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import common.Parameters;
-
-import slave.AssignmentHandler;
+import common.Command;
+import common.DownloadAck;
+import common.DownloadRepCommand;
+import common.FileOperator;
+import common.InitAssignmentCommand;
+import common.InitJobAck;
+import common.Message;
 
 /**
  * Contains node information
  * @author lihao
  *
  */
-public class Node {
+public class Node extends Thread {
 	private static int nextNodeID = 1;
 	private int nodeID;
+	private long jobID;
 	private String IPAddress;
-	private AssignmentHandler assignmentHandler;
+	private Socket slaveSocket;
 	private ArrayList<Integer> repList;
 	private int status;
 	public static int DEAD = 0;
@@ -42,27 +48,19 @@ public class Node {
 	 * Find slave handler
 	 * @return slave handler
 	 */
-	public boolean findHandler() {
+	public Socket connect() {
 		try {
-			Registry registry = LocateRegistry.getRegistry("localhost");
-			assignmentHandler = (AssignmentHandler)registry.lookup(Parameters.slaveHandlerName);
-			return true;
-		} catch (AccessException e) {
+			slaveSocket = new Socket(this.IPAddress, common.Parameters.slavePort);
+			System.out.println("Connected to slave!");
+			return slaveSocket;
+		} catch (UnknownHostException e) {
+			System.err.println("Can't find slave!");
 			e.printStackTrace();
-		} catch (RemoteException e) {
+			return null;
+		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (NotBoundException e) {
-			e.printStackTrace();
+			return null;
 		}
-		return false;
-	}
-	
-	/**
-	 * Set slave handler
-	 * @param assignmentHandler Assignment Handler
-	 */
-	public void setAssignmentHandler(AssignmentHandler assignmentHandler) {
-		this.assignmentHandler = assignmentHandler;
 	}
 	
 	/**
@@ -87,16 +85,99 @@ public class Node {
 	 * @param repList Replication list
 	 * @param jobAssigner Job Assigner
 	 */
-	public int addAssignment(long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
-		int val = 0;
+	public int addAssignment(long jobID, ArrayList<Integer> repList) {
+		this.jobID = jobID;
+		this.repList = repList;
+		File file = new File(FileOperator.masterDataPath(jobID));
+		long fileLength = file.length();
+		InitAssignmentCommand iac = new InitAssignmentCommand(Command.InitAssignmentCommand, jobID, nodeID, fileLength, repList);
 		try {
-			setReplist(repList);
-			val = assignmentHandler.addAssignment(nodeID, jobID, repList, jobAssigner);
-		} catch (RemoteException e) {
+			ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
+			oos.writeObject(iac);
+			oos.flush();
+			oos.close();
+			
+			if (!FileOperator.uploadFile(slaveSocket, file.getAbsolutePath(), fileLength)) {
+				System.out.println("Upload file error!");
+				slaveSocket.close();
+				return Message.UploadError;
+			}
+			
+			ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
+			Command cmd = (Command)ois.readObject();
+			ois.close();
+			InitJobAck ija = (InitJobAck)cmd;
+			if (ija.jobID < 0) {
+				System.out.println("Add asignment error in slave!");
+				return Message.UploadError;
+			}
+			System.out.println("Add assignemnt successfully!");
+		} catch (IOException e) {
+			System.out.println("IO error!");
+			e.printStackTrace();
+			return Message.UploadError;
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		return val;
+		return Message.OK;
 	}
+	
+	public void run() {
+		while (true) {
+			try {
+				ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
+				Command cmd = (Command)ois.readObject();
+				ois.close();
+				
+				//Download result from slave
+				if (cmd.commandID == Command.DownloadRepCommand) {
+					DownloadRepCommand drc = (DownloadRepCommand)cmd;
+					int rep = drc.repNum;
+					long fileLength = drc.fileLength;
+					FileOperator.makeDir(new File(master.Parameters.masterResultPath + "/" + jobID));
+					File file = new File(FileOperator.masterRepPath(jobID, rep));
+					FileOperator.makeDir(file);
+					String filePath = FileOperator.masterResultPath(jobID, rep);
+					System.out.println("Downloading replication " + rep + "...");
+					if (!FileOperator.storeFile(slaveSocket, filePath, fileLength)) {
+						System.out.println("Download replication error!");
+						ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
+						oos.writeObject(new DownloadAck(Command.DownloadAck, -1));
+						oos.flush();
+						oos.close();
+					} else {
+						System.out.println("Download replication success!");
+						if (!FileOperator.unzipFile(new File(FileOperator.masterResultPath(jobID, rep)), FileOperator.masterRepPath(jobID, rep))) {
+							System.out.println("Unzip replication " + rep + " error!");
+						}
+						ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
+						oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
+						oos.flush();
+						oos.close();
+						Job job = JobTracker.getJob(jobID);
+						job.updateRepList(nodeID, rep);
+						if (job.checkNodeStatus()) {
+							synchronized (job.isJobDone) {
+								job.isJobDone.notify();
+							}
+							this.status = Node.AVAILABLE;
+							return;
+						}
+						removeRep(rep);
+						if (this.isEmptyRep()) {
+							this.status = Node.AVAILABLE;
+							return;
+						}
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	
 	/**
 	 * Get nodeID

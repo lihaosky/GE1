@@ -1,37 +1,112 @@
 package slave;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
-import master.JobAssigner;
+
+import common.AddRepCommand;
+import common.Command;
+import common.DownloadAck;
+import common.FileOperator;
+import common.InitAssignmentCommand;
+import common.InitJobAck;
+import common.Message;
 
 /**
- * Remote interface for master to start assignment and get result
+ * This class handle request from master to initiate assignment and upload result
  * @author lihao
  *
  */
-public interface AssignmentHandler extends Remote {
+public class AssignmentHandler extends Thread {
+	private Socket masterSocket;
+	public long jobID;
+	
+	public AssignmentHandler(Socket s) {
+		super();
+		masterSocket = s;
+	}
+
+	public void run() {
+		try {
+			ObjectInputStream ois = new ObjectInputStream(masterSocket.getInputStream());
+			ObjectOutputStream oos = new ObjectOutputStream(masterSocket.getOutputStream());
+			while (true) {
+				Command cmd = (Command)ois.readObject();
+	
+				//New assignment from master
+				if (cmd.commandID == Command.InitAssignmentCommand) {
+					InitAssignmentCommand iac = (InitAssignmentCommand)cmd;
+					long jobID = iac.jobID;
+					int nodeID = iac.nodeID;
+					long fileLength = iac.fileLength;
+					ArrayList<Integer> repList = iac.repList;
+					int status = addAssignment(nodeID, jobID, fileLength, repList);
+					InitJobAck ija = new InitJobAck(Command.InitJobAck, status);
+					oos.writeObject(ija);
+					oos.flush();
+					if (status < 0) {
+						masterSocket.close();
+						return;
+					}
+				}
+				//Download ack from master
+				else if (cmd.commandID == Command.DownloadAck) {
+					DownloadAck da = (DownloadAck)cmd;
+					if (da.status > 0) {
+						Assignment a = AssignmentTracker.getAssignment(jobID);
+						//No more replication to execute
+						if (a.getRepListSize() == 0) {
+							ois.close();
+							oos.close();
+							masterSocket.close();
+							return;
+						}
+					}
+				}
+				//Add more replication from master
+				else if (cmd.commandID == Command.AddRepCommand) {
+					AddRepCommand arc = (AddRepCommand)cmd;
+					Assignment a = AssignmentTracker.getAssignment(jobID);
+					a.addRep(arc.repList);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
-	 * Master call slave's remote object to call this method to start assignment in slave
-	 * @param jobID         JobID
-	 * @param fileName      File needed to fetch
-	 * @param repList       Replications need to do
-	 * @param jobAssigner   Get the master's job assigner. In order to upload data to master
-	 * @throws RemoteException
+	 * Download data from master, get the replication this slave need to do
 	 */
-	public int addAssignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) throws RemoteException;
-	/**
-	 * Upload result to master
-	 * @param jobID JobID
-	 * @param repNum Replication number completed
-	 * @return 
-	 * @throws RemoteException
-	 */
-	public byte[] uploadResult(long jobID, int repNum) throws RemoteException;
-	/**
-	 * Add replication to this node in case of other node's failure
-	 * @param repList List of replications added
-	 * @throws RemoteException
-	 */
-	public void addRep(long jodID, ArrayList<Integer> repList) throws RemoteException;
+	public int addAssignment(int nodeID, long jobID, long fileLength, ArrayList<Integer> repList) {
+		this.jobID = jobID;
+		
+		//Make data directory
+		System.out.println("Making data directory...");
+		File file = new File(slave.Parameters.slaveDataPath + "/" + jobID);
+		if (!FileOperator.makeDir(file)) {
+			return Message.MkDirError;
+		}
+		
+		//Store file
+		System.out.println("Downloading file from master...");
+		String filePath = FileOperator.slaveDataPath(jobID);
+		if (!FileOperator.storeFile(masterSocket, filePath, fileLength)) {
+			System.out.println("Download master file error!");
+			return Message.DownloadError;
+		}
+		
+		
+		//Start the assignment
+		Assignment assignment = new Assignment(nodeID, jobID, repList, masterSocket);
+		AssignmentTracker.addAssignment(jobID, assignment);
+		assignment.start();
+
+		return Message.OK;
+	}
 }

@@ -2,10 +2,8 @@ package slave;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
+import java.net.ServerSocket;
+import java.net.Socket;
 import common.FileOperator;
 
 /**
@@ -37,17 +35,17 @@ public class Slave {
 	 * Start slave
 	 */
 	public void start() {
-		//start assignment handler...
 		try {
-			AssignmentHandler assign = new AssignmentHandlerImp();
-			AssignmentHandler assignStub = (AssignmentHandler)UnicastRemoteObject.exportObject(assign, 1234);
-			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind(common.Parameters.slaveHandlerName, assignStub);
-			Assignment.setAssignmentHandler(assign);
-			System.out.println("AssignmentHandler bound!");
+			ServerSocket ss = new ServerSocket(common.Parameters.slavePort);
+			while (true) {
+				Socket s = ss.accept();
+				AssignmentHandler ah = new AssignmentHandler(s);
+				ah.start();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	public static void main(String[] args) {

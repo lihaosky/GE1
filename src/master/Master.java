@@ -1,10 +1,9 @@
 package master;
 
 import java.io.File;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import common.FileOperator;
 
 /**
@@ -39,28 +38,22 @@ public class Master {
 	 * Start master
 	 */
 	public void start() {
-		/*
-		 * Bind jobHandler, create JobAssigner and assign it to Job
-		 * NodeManager find all available nodes
-		 * */
-		if (System.getSecurityManager() == null) {
-			System.setSecurityManager(new SecurityManager());
-		}
+		
+		//Listen on port 1234 for client connection
 		try {
-			/*
-			 * Create and bind jobhandler
-			 */
-			String jobHandlerName = common.Parameters.jobHandlerName;
-			JobHandler jobHandler = new JobHandlerImp();
-			JobHandler jobHandlerStub = (JobHandler)UnicastRemoteObject.exportObject(jobHandler, 1234);
-			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind(jobHandlerName, jobHandlerStub);
-			System.out.println("JobHandler bound");
-			
-			JobAssigner jobAssigner = new JobAssignerImp();
-			Job.setJobAssigner(jobAssigner);
-		} catch (Exception e) {
-			System.err.println("JobHandler bind exception!");
+			ServerSocket ss = new ServerSocket(common.Parameters.serverPort);
+			while (true) {
+				Socket s = ss.accept();
+				System.out.println("Got connection from client!");
+				Thread.sleep(2000);
+				//Pass the client socket to job handler to handle
+				JobHandler jobHandler = new JobHandler(s);
+				jobHandler.start();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

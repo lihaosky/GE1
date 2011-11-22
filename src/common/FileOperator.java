@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -216,48 +217,60 @@ public class FileOperator {
 	}
 	
 	/**
-	 * Store a file
+	 * Store a file from socket
 	 * @param filePath File path
 	 * @param bytes Bytes of file
 	 * @return
 	 */
-	public static boolean storeFile(String filePath, byte[] bytes) {
+	public static boolean storeFile(Socket s, String filePath, long fileLength) {
 		try {
-			BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(filePath));
-			output.write(bytes,0,bytes.length);
-			output.flush();
-			output.close();
+			byte[] buffer = new byte[1024 * 4];
+			BufferedInputStream bis = new BufferedInputStream(s.getInputStream());
+			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
+			int totalRead = 0;
+			int readCount;
+			while ((readCount = bis.read(buffer)) > 0) {
+				totalRead += readCount;
+				bos.write(buffer, 0, readCount);
+				System.out.println((int)(((double)totalRead) / fileLength * 100) + "% downloaded...");
+			}
+			bos.flush();
+			bos.close();
 			return true;
 		} catch (IOException e) {
-			System.err.println("Fail to store file!");
 			e.printStackTrace();
 			return false;
+			
 		}
 	}
 	
 	/**
-	 * Get bytes of the file
-	 * @param filePath File path
-	 * @return Bytes
+	 * Send file over socket
+	 * @param s
+	 * @param filePath
+	 * @return
 	 */
-	public static byte[] getBytes(String filePath) {
-        File file = new File(filePath);
-        byte buffer[] = new byte[(int)file.length()];
-        
-        BufferedInputStream input;
+	public static boolean uploadFile(Socket s, String filePath, long fileLength) {
 		try {
-			input = new BufferedInputStream(new FileInputStream(filePath));
-	        input.read(buffer,0,buffer.length);
-	        input.close();
-	        return(buffer);
+			byte[] buffer = new byte[1024 * 4];
+			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
+			BufferedOutputStream bos = new BufferedOutputStream(s.getOutputStream());
+			int totalRead = 0;
+			int readCount;
+			while ((readCount = bis.read(buffer)) > 0) {
+				totalRead += readCount;
+				bos.write(buffer, 0, readCount);
+				System.out.println((int)(((double)totalRead) / fileLength * 100) + "% uploaded...");
+			}
+			bos.flush();
+			bis.close();
+			return true;
 		} catch (FileNotFoundException e) {
-			System.err.println("Can't find file!");
 			e.printStackTrace();
-			return null;
+			return false;
 		} catch (IOException e) {
-			System.err.println("Error when read file!");
 			e.printStackTrace();
-			return null;
+			return false;
 		}
 	}
 	

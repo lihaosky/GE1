@@ -1,11 +1,14 @@
 package slave;
 
 import java.io.File;
-import java.rmi.RemoteException;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 
+import common.Command;
+import common.DownloadRepCommand;
 import common.FileOperator;
-import master.JobAssigner;
 
 /**
  * Represents divisions assigned by master to execute
@@ -13,12 +16,9 @@ import master.JobAssigner;
  *
  */
 public class Assignment extends Thread {
-	private int nodeID;
 	private long jobID;
 	private ArrayList<Integer> repList;
-	private JobAssigner jobAssigner;
-	private static AssignmentHandler assignmentHandler;
-	
+	private Socket masterSocket;
 	/**
 	 * Assignment constructor
 	 * @param nodeID This nodeID
@@ -26,11 +26,10 @@ public class Assignment extends Thread {
 	 * @param repList List of replication needs to be done by this node
 	 * @param jobAssigner JobAssigner of master. For calling download
 	 */
-	public Assignment(int nodeID, long jobID, ArrayList<Integer> repList, JobAssigner jobAssigner) {
+	public Assignment(int nodeID, long jobID, ArrayList<Integer> repList, Socket masterSocket) {
 		this.jobID = jobID;
-		this.nodeID = nodeID;
 		this.repList = repList;
-		this.jobAssigner = jobAssigner;
+		this.masterSocket = masterSocket;
 	}
 	
 	/**
@@ -59,13 +58,18 @@ public class Assignment extends Thread {
 			//Fake!
 			String resultPath = "/home/lihao/Desktop/GE_Project/p1/result.zip";
 			FileOperator.cpFile(new File(resultPath), new File(FileOperator.slaveResultPath(jobID, rep)));
+			System.out.println("Upload replication " + rep + " to master...");
+			String filePath = FileOperator.slaveResultPath(jobID, rep);
+			file = new File(filePath);
 			try {
-				jobAssigner.downloadResult(nodeID, jobID, rep, assignmentHandler);
-			} catch (RemoteException e) {
+				ObjectOutputStream oos = new ObjectOutputStream(masterSocket.getOutputStream());
+				oos.writeObject(new DownloadRepCommand(Command.DownloadRepCommand, rep, file.length()));
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-			
+			if (!FileOperator.uploadFile(masterSocket, filePath, file.length())) {
+				System.out.println("Upload replication to master error!");
+			}
 		}
 	}
 	
@@ -101,6 +105,5 @@ public class Assignment extends Thread {
 	 * @param assign Assignment handler
 	 */
 	public static void setAssignmentHandler(AssignmentHandler assign) {
-		assignmentHandler = assign;
 	}
 }
