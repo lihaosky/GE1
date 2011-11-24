@@ -45,19 +45,45 @@ public class Assignment extends Thread {
 			file = new File(FileOperator.slaveDataPath(jobID));
 			
 			//Unzip data.zip to replication directory
-			FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep));
+			if (!FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep))) {
+				System.out.println("Unzip file error!");
+			}
 			
 			//Copy marsMain to replication directory
-			FileOperator.cpFile(new File(slave.Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"));
-			FileOperator.cpFile(new File(slave.Parameters.marsMainCtlLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"));
+			if (!FileOperator.cpFile(new File(slave.Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"))) {
+				System.out.println("Copy file error!");
+			}
+			//Mars.ctl will be provided by client
+			//FileOperator.cpFile(new File(slave.Parameters.marsMainCtlLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"));
 			
 			/*********************************************
 			 * NEED TO EDIT mars.ctl                     *
 			 ********************************************/
+			//Edit the mars.ctl
+			if (!FileOperator.editMarsCtl(new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"), rep)) {
+				System.out.println("Edit mars.ctl in " + rep + " error!");
+			}
 			
+			//Start execution
+			try {
+				Process p = Runtime.getRuntime().exec(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain MARS-LIC");
+				p.waitFor();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			//Zip the output file and send it to master
+			if (!FileOperator.zipExcludeFile(new File(FileOperator.slaveRepPath(jobID, rep)), common.Parameters.neededInputFiles)) {
+				System.out.println("Zip result error!");
+			}
+			
+			/*
 			//Fake!
 			String resultPath = "/home/lihao/Desktop/GE_Project/p1/result.zip";
-			FileOperator.cpFile(new File(resultPath), new File(FileOperator.slaveResultPath(jobID, rep)));
+			FileOperator.cpFile(new File(resultPath), new File(FileOperator.slaveResultPath(jobID, rep)));*/
+			
 			System.out.println("Upload replication " + rep + " to master...");
 			String filePath = FileOperator.slaveResultPath(jobID, rep);
 			file = new File(filePath);
@@ -98,12 +124,5 @@ public class Assignment extends Thread {
 	 */
 	synchronized public int getRep(int i) {
 		return repList.get(i);
-	}
-	
-	/**
-	 * Set the assignment handler
-	 * @param assign Assignment handler
-	 */
-	public static void setAssignmentHandler(AssignmentHandler assign) {
 	}
 }
