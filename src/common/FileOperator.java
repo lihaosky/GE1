@@ -2,10 +2,14 @@ package common;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -79,8 +83,7 @@ public class FileOperator {
             FileOutputStream dest = new FileOutputStream(file.getAbsolutePath() + "/" + Parameters.dataFileName);
             ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
             byte data[] = new byte[BUFFER];
-            // get a list of files from current directory
-
+            
             for (int i=0; i < Parameters.neededInputFiles.length; i++) {
         	  String filePath = file.getAbsolutePath() + "/" + Parameters.neededInputFiles[i];
               System.out.println("Adding: " + Parameters.neededInputFiles[i]);
@@ -102,6 +105,54 @@ public class FileOperator {
         }
 		return true;
 	}
+	
+	/**
+	 * Zip all the files in the directory except excludedFiles
+	 * @param file File directory
+	 * @param excludedFiles Files excluded
+	 * @return
+	 */
+	public static boolean zipExcludeFile(File file, String[] excludedFiles) {
+		int BUFFER = 2048;
+        try {
+            BufferedInputStream origin = null;
+            FileOutputStream dest = new FileOutputStream(file.getAbsolutePath() + "/" + Parameters.resultFileName);
+            ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+            byte data[] = new byte[BUFFER];
+            // get a list of files from current directory
+            String[] fileList = file.list();
+            
+            for (int i = 0; i < fileList.length; i++) {
+            	boolean exist = false;
+            	for (int j = 0; j < excludedFiles.length; j++) {
+            		if (fileList[i].equals(excludedFiles[j])) {
+            			exist = true;
+            		}
+            	}
+            	if (exist) {
+            		continue;
+            	}
+	            String filePath = file.getAbsolutePath() + "/" + fileList[i];
+	            System.out.println("Adding: " + fileList[i]);
+	            FileInputStream fi = new FileInputStream(filePath);
+	            origin = new BufferedInputStream(fi, BUFFER);
+	            ZipEntry entry = new ZipEntry(fileList[i]);
+	            out.putNextEntry(entry);
+	            int count;
+	            while((count = origin.read(data, 0, BUFFER)) != -1) {
+	            	out.write(data, 0, count);
+	            }
+	            origin.close();
+            }
+           out.close();
+        } catch(Exception e) {
+        	System.err.println("Zip file error!");
+            e.printStackTrace();
+            return false;
+        }
+		return true;
+	}
+	
 	
 	/**
 	 * Unzip file to output directory
@@ -217,6 +268,39 @@ public class FileOperator {
 	}
 	
 	/**
+	 * Edit the mars.ctl file: add repNum in the first two lines
+	 * @param file
+	 * @param repNum
+	 * @return
+	 */
+	public static boolean editMarsCtl(File file, int repNum) {
+		try {
+			File file1 = new File(file.getAbsolutePath() + "tmp");
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file1));
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			bw.write("" + repNum);
+			bw.newLine();
+			bw.write("" + repNum);
+			bw.newLine();
+			String line = br.readLine();
+			while (line != null) {
+				bw.write(line);
+				bw.newLine();
+				line = br.readLine();
+			}
+			file.delete();
+			file1.renameTo(file);
+			bw.flush();
+			bw.close();
+			br.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		} 
+	}
+	
+	/**
 	 * Store a file from socket
 	 * @param filePath File path
 	 * @param bytes Bytes of file
@@ -232,8 +316,9 @@ public class FileOperator {
 			while ((readCount = bis.read(buffer)) > 0) {
 				totalRead += readCount;
 				bos.write(buffer, 0, readCount);
-				System.out.println((int)(((double)totalRead) / fileLength * 100) + "% downloaded...");
+				System.out.print("\r" + (int)(((double)totalRead) / fileLength * 100) + "% downloaded...");
 			}
+			System.out.println();
 			bos.flush();
 			bos.close();
 			return true;
@@ -260,8 +345,9 @@ public class FileOperator {
 			while ((readCount = bis.read(buffer)) > 0) {
 				totalRead += readCount;
 				bos.write(buffer, 0, readCount);
-				System.out.println((int)(((double)totalRead) / fileLength * 100) + "% uploaded...");
+				System.out.print("\r" + (int)(((double)totalRead) / fileLength * 100) + "% uploaded...");
 			}
+			System.out.println();
 			bos.flush();
 			bis.close();
 			return true;
