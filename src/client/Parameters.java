@@ -7,8 +7,7 @@ import java.util.Properties;
 /**
  * 
  * Store the parameters for client
- * Maybe should be separated...
- * Maybe get these from configuration file...
+ * Get these from configuration file...
  * @author lihao
  *
  */
