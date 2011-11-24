@@ -1,9 +1,7 @@
 package common;
 
 /**
- * Store the parameters
- * Maybe should be separated...
- * Maybe get these from configuration file...
+ * Store common parameters
  * @author lihao
  *
  */
