@@ -7,16 +7,16 @@ import java.util.Properties;
 
 /**
  * Store the parameters for master
- * Maybe should be separated...
- * Maybe get these from configuration file...
+ * Get these from configuration file...
  * @author lihao
  *
  */
 public class Parameters {
 	public static Properties prop;
+	public static String homeDir;
 	static {
 		Properties p = System.getProperties();
-		String homeDir = p.getProperty("user.home");
+		homeDir = p.getProperty("user.home");
 		try {
 			FileInputStream fi = new FileInputStream(homeDir + "/" + ".GEmaster.config");
 			prop = new Properties();
@@ -43,4 +43,8 @@ public class Parameters {
 	 * Marsout control file location
 	 */
 	public static String marsOutCtlLocation = prop.getProperty("marsOutCtlLocation");
+	/**
+	 * Node list file
+	 */
+	public static String nodeListFile = homeDir + "/" + ".nodeList.config";
 }
