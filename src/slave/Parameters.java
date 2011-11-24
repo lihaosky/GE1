@@ -6,9 +6,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Store the parameters for master
- * Maybe should be separated...
- * Maybe get these from configuration file...
+ * Store the parameters for slave
+ * Get these from configuration file...
  * @author lihao
  *
  */
