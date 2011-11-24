@@ -29,7 +29,7 @@ public class Parameters {
 	/**
 	 * Needed input files from client
 	 */
-	public static String[] neededInputFiles = {"mars.in02", "mars.in05", "mars.in17", "MARS-LIC"};
+	public static String[] neededInputFiles = {"mars.in02", "mars.in05", "mars.in17", "MARS-LIC", "mars.ctl"};
 	/**
 	 * Server port number
 	 */
