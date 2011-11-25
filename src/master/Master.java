@@ -68,6 +68,11 @@ public class Master {
 			System.out.println("marsOut location is: " + Parameters.marsOutLocation);
 			System.out.println("marsOut control file location is: " + Parameters.marsOutCtlLocation);
 			System.out.println("Your home directory is: " + Parameters.homeDir);
+			System.out.println("Find slave nodes...");
+			if (!NodeManager.findNodes()) {
+				System.out.println("Error finding slave nodes!");
+				return;
+			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
