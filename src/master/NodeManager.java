@@ -13,7 +13,7 @@ import java.util.ArrayList;
  *
  */
 public class NodeManager {
-	private static ArrayList<Node> nodeList;
+	private static ArrayList<Node> nodeList = new ArrayList<Node>();
 	
 	/**
 	 * Find node list
