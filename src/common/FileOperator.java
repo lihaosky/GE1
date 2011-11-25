@@ -317,6 +317,9 @@ public class FileOperator {
 				totalRead += readCount;
 				bos.write(buffer, 0, readCount);
 				System.out.print("\r" + (int)(((double)totalRead) / fileLength * 100) + "% downloaded...");
+				if (totalRead == fileLength) {
+					break;
+				}
 			}
 			System.out.println();
 			bos.flush();
