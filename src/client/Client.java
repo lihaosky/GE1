@@ -68,8 +68,8 @@ public class Client {
 				return false;
 			}
 			
+			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 			while (true) {
-				ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 				Command cmd = (Command)ois.readObject();
 				//ois.close();
 				
