@@ -40,16 +40,19 @@ public class Assignment extends Thread {
 			int rep = this.getRep(i);
 			
 			//Create directory for replication 
+			System.out.println("Create directory for replication " + rep + "...");
 			File file = new File(FileOperator.slaveRepPath(jobID, rep));
 			FileOperator.makeDir(file);
 			file = new File(FileOperator.slaveDataPath(jobID));
 			
 			//Unzip data.zip to replication directory
+			System.out.println("Unzip data file...");
 			if (!FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep))) {
 				System.out.println("Unzip file error!");
 			}
 			
 			//Copy marsMain to replication directory
+			System.out.println("Copy marsMain...");
 			if (!FileOperator.cpFile(new File(slave.Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"))) {
 				System.out.println("Copy file error!");
 			}
@@ -60,13 +63,15 @@ public class Assignment extends Thread {
 			 * NEED TO EDIT mars.ctl                     *
 			 ********************************************/
 			//Edit the mars.ctl
+			System.out.println("Edit the mars.ctl file...");
 			if (!FileOperator.editMarsCtl(new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"), rep)) {
 				System.out.println("Edit mars.ctl in " + rep + " error!");
 			}
 			
 			//Start execution
+			System.out.println("Start execution of replication " + rep + "...");
 			try {
-				Process p = Runtime.getRuntime().exec(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain MARS-LIC");
+				Process p = Runtime.getRuntime().exec(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain mars.ctl");
 				p.waitFor();
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -75,7 +80,10 @@ public class Assignment extends Thread {
 			}
 			
 			//Zip the output file and send it to master
-			if (!FileOperator.zipExcludeFile(new File(FileOperator.slaveRepPath(jobID, rep)), common.Parameters.neededInputFiles)) {
+			System.out.println("Zip result...");
+			String[] extraFile = new String[common.Parameters.neededInputFiles.length + 1];
+			extraFile[common.Parameters.neededInputFiles.length] = "marsMain";
+			if (!FileOperator.zipExcludeFile(new File(FileOperator.slaveRepPath(jobID, rep)), extraFile)) {
 				System.out.println("Zip result error!");
 			}
 			
