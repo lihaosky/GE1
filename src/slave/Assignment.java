@@ -71,7 +71,7 @@ public class Assignment extends Thread {
 			//Start execution
 			System.out.println("Start execution of replication " + rep + "...");
 			try {
-				Process p = Runtime.getRuntime().exec(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain mars.ctl");
+				Process p = Runtime.getRuntime().exec("./marsMain mars.ctl", null, new File(FileOperator.slaveRepPath(jobID, rep)));
 				p.waitFor();
 			} catch (IOException e1) {
 				e1.printStackTrace();

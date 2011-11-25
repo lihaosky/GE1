@@ -123,62 +123,61 @@ public class Node extends Thread {
 	}
 	
 	public void run() {
-		while (true) {
-			try {
-				ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
-				Command cmd = (Command)ois.readObject();
-				//ois.close();
-				
-				//Download result from slave
-				if (cmd.commandID == Command.DownloadRepCommand) {
-					DownloadRepCommand drc = (DownloadRepCommand)cmd;
-					int rep = drc.repNum;
-					long fileLength = drc.fileLength;
-					FileOperator.makeDir(new File(master.Parameters.masterResultPath + "/" + jobID));
-					File file = new File(FileOperator.masterRepPath(jobID, rep));
-					FileOperator.makeDir(file);
-					String filePath = FileOperator.masterResultPath(jobID, rep);
-					System.out.println("Downloading replication " + rep + " from node " + nodeID + " ...");
-					if (!FileOperator.storeFile(slaveSocket, filePath, fileLength)) {
-						System.out.println("Download replication error!");
-						ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
-						oos.writeObject(new DownloadAck(Command.DownloadAck, -1));
-						oos.flush();
-						oos.close();
-						slaveSocket.close();
-						this.status = Node.AVAILABLE;
-					} else {
-						System.out.println("Download replication success!");
-						if (!FileOperator.unzipFile(new File(FileOperator.masterResultPath(jobID, rep)), FileOperator.masterRepPath(jobID, rep))) {
-							System.out.println("Unzip replication " + rep + " error!");
-						}
-						ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
-						oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
-						oos.flush();
-						//oos.close();
-						Job job = JobTracker.getJob(jobID);
-						job.updateRepList(nodeID, rep);
-						if (job.checkNodeStatus()) {
-							synchronized (job.isJobDone) {
-								job.isJobDone.notify();
-							}
-							this.status = Node.AVAILABLE;
-							return;
-						}
-						removeRep(rep);
-						if (this.isEmptyRep()) {
+		try {
+			ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
+			ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
+			while (true) {
+					Command cmd = (Command)ois.readObject();
+					//ois.close();
+					
+					//Download result from slave
+					if (cmd.commandID == Command.DownloadRepCommand) {
+						DownloadRepCommand drc = (DownloadRepCommand)cmd;
+						int rep = drc.repNum;
+						long fileLength = drc.fileLength;
+						FileOperator.makeDir(new File(master.Parameters.masterResultPath + "/" + jobID));
+						File file = new File(FileOperator.masterRepPath(jobID, rep));
+						FileOperator.makeDir(file);
+						String filePath = FileOperator.masterResultPath(jobID, rep);
+						System.out.println("Downloading replication " + rep + " from node " + nodeID + " ...");
+						if (!FileOperator.storeFile(slaveSocket, filePath, fileLength)) {
+							System.out.println("Download replication error!");
+							oos.writeObject(new DownloadAck(Command.DownloadAck, -1));
+							oos.flush();
 							oos.close();
 							slaveSocket.close();
 							this.status = Node.AVAILABLE;
-							return;
+						} else {
+							System.out.println("Download replication success!");
+							if (!FileOperator.unzipFile(new File(FileOperator.masterResultPath(jobID, rep)), FileOperator.masterRepPath(jobID, rep))) {
+								System.out.println("Unzip replication " + rep + " error!");
+							}
+							oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
+							oos.flush();
+							//oos.close();
+							Job job = JobTracker.getJob(jobID);
+							job.updateRepList(nodeID, rep);
+							if (job.checkNodeStatus()) {
+								synchronized (job.isJobDone) {
+									job.isJobDone.notify();
+								}
+								this.status = Node.AVAILABLE;
+								return;
+							}
+							removeRep(rep);
+							if (this.isEmptyRep()) {
+								oos.close();
+								slaveSocket.close();
+								this.status = Node.AVAILABLE;
+								return;
+							}
 						}
 					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 	

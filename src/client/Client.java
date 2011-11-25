@@ -279,7 +279,6 @@ class ReadInput extends Thread {
 					ObjectOutputStream oos = new ObjectOutputStream(serverSocket.getOutputStream());
 					oos.writeObject(csc);
 					oos.flush();
-					oos.close();
 				} else {
 					System.out.println("Unknown command! Please input again!");
 				}
