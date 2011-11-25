@@ -115,12 +115,13 @@ public class FileOperator {
 	public static boolean zipExcludeFile(File file, String[] excludedFiles) {
 		int BUFFER = 2048;
         try {
+        	// get a list of files from current directory
+        	String[] fileList = file.list();
+        	
             BufferedInputStream origin = null;
             FileOutputStream dest = new FileOutputStream(file.getAbsolutePath() + "/" + Parameters.resultFileName);
             ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
             byte data[] = new byte[BUFFER];
-            // get a list of files from current directory
-            String[] fileList = file.list();
             
             for (int i = 0; i < fileList.length; i++) {
             	boolean exist = false;
