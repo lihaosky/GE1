@@ -32,6 +32,8 @@ public class Node extends Thread {
 	public static int DEAD = 0;
 	public static int AVAILABLE = 1;
 	public static int BUSY = 2;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
 	
 	/**
 	 * @param IPAddress Node IP address
@@ -92,7 +94,7 @@ public class Node extends Thread {
 		long fileLength = file.length();
 		InitAssignmentCommand iac = new InitAssignmentCommand(Command.InitAssignmentCommand, jobID, nodeID, fileLength, repList);
 		try {
-			ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
+			oos = new ObjectOutputStream(slaveSocket.getOutputStream());
 			oos.writeObject(iac);
 			oos.flush();
 			//oos.close();
@@ -103,7 +105,7 @@ public class Node extends Thread {
 				return Message.UploadError;
 			}
 			
-			ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
+			ois = new ObjectInputStream(slaveSocket.getInputStream());
 			Command cmd = (Command)ois.readObject();
 			//ois.close();
 			InitJobAck ija = (InitJobAck)cmd;
@@ -124,8 +126,6 @@ public class Node extends Thread {
 	
 	public void run() {
 		try {
-			ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
-			ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
 			while (true) {
 					Command cmd = (Command)ois.readObject();
 					//ois.close();

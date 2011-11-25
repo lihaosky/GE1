@@ -20,6 +20,7 @@ import common.Message;
 public class Job extends Thread {
 	private static long nextJobID = 1;
 	private long jobID;
+	private ObjectOutputStream oos;
 	private Socket clientSocket;
 	private int repNum;
 	private ArrayList<Node> slaveList;
@@ -34,9 +35,10 @@ public class Job extends Thread {
 	 * @param fileName
 	 * @param client
 	 */
-	public Job(int repNum, Socket clientSocket, int time) {
+	public Job(int repNum, Socket clientSocket, ObjectOutputStream oos, int time) {
 		this.repNum = repNum;
 		this.time = time;
+		this.oos = oos;
 		this.clientSocket = clientSocket;
 		jobID = getNextJobID();
 	//	this.isJobDone = isJobDone;
@@ -84,7 +86,6 @@ public class Job extends Thread {
 		File file = new File(Parameters.masterResultPath + "/" + common.Parameters.resultFileName);
 		long fileLength = file.length();
 		try {
-			ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
 			oos.writeObject(new DownloadCommand(Command.DownloadCommand, fileLength));
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -21,6 +21,8 @@ import common.Message;
  */
 public class JobHandler extends Thread {
 	private Socket clientSocket;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
 	
 	public JobHandler(Socket s) {
 		super();
@@ -28,10 +30,9 @@ public class JobHandler extends Thread {
 	}
 	
 	public void run() {
-		ObjectInputStream ois;
 		try {
 			ois = new ObjectInputStream(clientSocket.getInputStream());
-			ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+			oos = new ObjectOutputStream(clientSocket.getOutputStream());
 			while (true) {
 				//Read client command
 				Command cmd = (Command)ois.readObject();
@@ -94,7 +95,7 @@ public class JobHandler extends Thread {
 		System.out.println("Time is " + time);
 		System.out.println("File length is " + fileLength);
 		
-		Job job = new Job(repNum, clientSocket, time);    //Create a new job
+		Job job = new Job(repNum, clientSocket, oos, time);    //Create a new job
 		long jobID = job.getJobID();
 	
 		//Make directory according to the unique jobID

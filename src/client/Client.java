@@ -83,7 +83,7 @@ public class Client {
 						return false;
 					} else {
 						System.out.println("Job successful added");
-						ReadInput ri = new ReadInput(s, jobID);
+						ReadInput ri = new ReadInput(jobID, oos);
 						ri.start();
 					}
 				} 
@@ -260,12 +260,12 @@ public class Client {
  *
  */
 class ReadInput extends Thread {
-	private Socket serverSocket;
 	private long jobID;
+	private ObjectOutputStream oos;
 	
-	public ReadInput(Socket serverSocket, long jobID) {
-		this.serverSocket = serverSocket;
+	public ReadInput(long jobID, ObjectOutputStream oos) {
 		this.jobID = jobID;
+		this.oos = oos;
 	}
 	
 	public void run() {
@@ -276,7 +276,6 @@ class ReadInput extends Thread {
 				String i = br.readLine();
 				if (i.equals("status")) {
 					CheckStatusCommand csc = new CheckStatusCommand(Command.CheckStatusCommand, jobID);
-					ObjectOutputStream oos = new ObjectOutputStream(serverSocket.getOutputStream());
 					oos.writeObject(csc);
 					oos.flush();
 				} else {

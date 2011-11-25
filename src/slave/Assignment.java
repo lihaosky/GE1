@@ -19,6 +19,8 @@ public class Assignment extends Thread {
 	private long jobID;
 	private ArrayList<Integer> repList;
 	private Socket masterSocket;
+	private ObjectOutputStream oos;
+	
 	/**
 	 * Assignment constructor
 	 * @param nodeID This nodeID
@@ -26,9 +28,10 @@ public class Assignment extends Thread {
 	 * @param repList List of replication needs to be done by this node
 	 * @param jobAssigner JobAssigner of master. For calling download
 	 */
-	public Assignment(int nodeID, long jobID, ArrayList<Integer> repList, Socket masterSocket) {
+	public Assignment(int nodeID, long jobID, ArrayList<Integer> repList, Socket masterSocket, ObjectOutputStream oos) {
 		this.jobID = jobID;
 		this.repList = repList;
+		this.oos = oos;
 		this.masterSocket = masterSocket;
 	}
 	
@@ -96,7 +99,6 @@ public class Assignment extends Thread {
 			String filePath = FileOperator.slaveResultPath(jobID, rep);
 			file = new File(filePath);
 			try {
-				ObjectOutputStream oos = new ObjectOutputStream(masterSocket.getOutputStream());
 				oos.writeObject(new DownloadRepCommand(Command.DownloadRepCommand, rep, file.length()));
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -23,6 +23,8 @@ import common.Message;
 public class AssignmentHandler extends Thread {
 	private Socket masterSocket;
 	public long jobID;
+	private ObjectOutputStream oos;
+	private ObjectInputStream ois;
 	
 	public AssignmentHandler(Socket s) {
 		super();
@@ -31,8 +33,8 @@ public class AssignmentHandler extends Thread {
 
 	public void run() {
 		try {
-			ObjectInputStream ois = new ObjectInputStream(masterSocket.getInputStream());
-			ObjectOutputStream oos = new ObjectOutputStream(masterSocket.getOutputStream());
+			ois = new ObjectInputStream(masterSocket.getInputStream());
+			oos = new ObjectOutputStream(masterSocket.getOutputStream());
 			while (true) {
 				Command cmd = (Command)ois.readObject();
 	
@@ -103,7 +105,7 @@ public class AssignmentHandler extends Thread {
 		
 		
 		//Start the assignment
-		Assignment assignment = new Assignment(nodeID, jobID, repList, masterSocket);
+		Assignment assignment = new Assignment(nodeID, jobID, repList, masterSocket, oos);
 		AssignmentTracker.addAssignment(jobID, assignment);
 		assignment.start();
 
