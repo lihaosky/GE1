@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import master.Parameters;
 import common.FileOperator;
 
 /**
@@ -39,6 +41,7 @@ public class Slave {
 			ServerSocket ss = new ServerSocket(common.Parameters.slavePort);
 			while (true) {
 				Socket s = ss.accept();
+				System.out.println("Got connection from master");
 				AssignmentHandler ah = new AssignmentHandler(s);
 				ah.start();
 			}
@@ -51,6 +54,10 @@ public class Slave {
 	public static void main(String[] args) {
 		try {
 			Class.forName("slave.Parameters");
+			System.out.println("Slave data location is: " + slave.Parameters.slaveDataPath);
+			System.out.println("marsMain location is: " + slave.Parameters.marsMainLocation);
+			System.out.println("marsMain control file location is: " + slave.Parameters.marsMainCtlLocation);
+			System.out.println("Your home directory is: " + Parameters.homeDir);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -58,6 +65,7 @@ public class Slave {
 		if (!slave.checkDirAndFile()) {
 			return;
 		}
+		System.out.println("Slave started...");
 		slave.start();
 	}
 }

@@ -95,7 +95,7 @@ public class Node extends Thread {
 			ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
 			oos.writeObject(iac);
 			oos.flush();
-			oos.close();
+			//oos.close();
 			
 			if (!FileOperator.uploadFile(slaveSocket, file.getAbsolutePath(), fileLength)) {
 				System.out.println("Upload file error!");
@@ -105,7 +105,7 @@ public class Node extends Thread {
 			
 			ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
 			Command cmd = (Command)ois.readObject();
-			ois.close();
+			//ois.close();
 			InitJobAck ija = (InitJobAck)cmd;
 			if (ija.jobID < 0) {
 				System.out.println("Add asignment error in slave!");
@@ -127,7 +127,7 @@ public class Node extends Thread {
 			try {
 				ObjectInputStream ois = new ObjectInputStream(slaveSocket.getInputStream());
 				Command cmd = (Command)ois.readObject();
-				ois.close();
+				//ois.close();
 				
 				//Download result from slave
 				if (cmd.commandID == Command.DownloadRepCommand) {
@@ -145,6 +145,8 @@ public class Node extends Thread {
 						oos.writeObject(new DownloadAck(Command.DownloadAck, -1));
 						oos.flush();
 						oos.close();
+						slaveSocket.close();
+						this.status = Node.AVAILABLE;
 					} else {
 						System.out.println("Download replication success!");
 						if (!FileOperator.unzipFile(new File(FileOperator.masterResultPath(jobID, rep)), FileOperator.masterRepPath(jobID, rep))) {
@@ -153,7 +155,7 @@ public class Node extends Thread {
 						ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
 						oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
 						oos.flush();
-						oos.close();
+						//oos.close();
 						Job job = JobTracker.getJob(jobID);
 						job.updateRepList(nodeID, rep);
 						if (job.checkNodeStatus()) {
@@ -165,6 +167,8 @@ public class Node extends Thread {
 						}
 						removeRep(rep);
 						if (this.isEmptyRep()) {
+							oos.close();
+							slaveSocket.close();
 							this.status = Node.AVAILABLE;
 							return;
 						}

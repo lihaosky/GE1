@@ -97,6 +97,11 @@ public class Assignment extends Thread {
 				System.out.println("Upload replication to master error!");
 			}
 		}
+		try {
+			masterSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

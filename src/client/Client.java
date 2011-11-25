@@ -71,7 +71,7 @@ public class Client {
 			while (true) {
 				ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 				Command cmd = (Command)ois.readObject();
-				ois.close();
+				//ois.close();
 				
 				//Ack to initjob
 				if (cmd.commandID == Command.InitJobAck) {
@@ -97,6 +97,7 @@ public class Client {
 						oos.writeObject(new DownloadAck(Command.DownloadAck, -1));
 						oos.flush();
 						oos.close();
+						ois.close();
 						s.close();
 						return false;
 					} 
@@ -105,6 +106,7 @@ public class Client {
 					oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
 					oos.flush();
 					oos.close();
+					ois.close();
 					s.close();
 					return true;
 				}
