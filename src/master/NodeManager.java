@@ -18,20 +18,27 @@ public class NodeManager {
 	/**
 	 * Find node list
 	 */
-	public static void findNodes() {
+	public static boolean findNodes() {
+		int n = 0;
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(Parameters.nodeListFile));
 			String line = br.readLine();
 			while (line != null) {
 				nodeList.add(new Node(line, Node.AVAILABLE));
+				line = br.readLine();
+				n++;
 			}
+			System.out.println("Found " + n + " slave nodes!");
+			return true;
 		} catch (FileNotFoundException e) {
 			System.err.println("Can't find file " + Parameters.nodeListFile);
 			e.printStackTrace();
+			return false;
 		} catch (IOException e) {
 			System.err.println("Read file error!");
 			e.printStackTrace();
+			return false;
 		} finally {
 			try {
 				br.close();
