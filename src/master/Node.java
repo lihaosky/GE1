@@ -138,7 +138,7 @@ public class Node extends Thread {
 					File file = new File(FileOperator.masterRepPath(jobID, rep));
 					FileOperator.makeDir(file);
 					String filePath = FileOperator.masterResultPath(jobID, rep);
-					System.out.println("Downloading replication " + rep + "...");
+					System.out.println("Downloading replication " + rep + " from node " + nodeID + " ...");
 					if (!FileOperator.storeFile(slaveSocket, filePath, fileLength)) {
 						System.out.println("Download replication error!");
 						ObjectOutputStream oos = new ObjectOutputStream(slaveSocket.getOutputStream());
