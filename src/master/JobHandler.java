@@ -42,8 +42,8 @@ public class JobHandler extends Thread {
 					int repNum = ijc.repNum;
 					int time = ijc.time;
 					Long fileLength = ijc.fileLength;
-					System.out.println("Rep number is " + repNum);
-					Thread.sleep(2000);
+					//System.out.println("Rep number is " + repNum);
+					//Thread.sleep(2000);
 					long jobID = addJob(repNum, time, fileLength);
 					InitJobAck ija = new InitJobAck(Command.InitJobAck, jobID);
 					oos.writeObject(ija);
@@ -78,9 +78,6 @@ public class JobHandler extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
