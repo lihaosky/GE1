@@ -9,6 +9,7 @@ public class DownloadCommand extends Command {
 	
 	public DownloadCommand(int id, long fileLength) {
 		super(id);
+		this.fileLength = fileLength;
 	}
 	
 }
