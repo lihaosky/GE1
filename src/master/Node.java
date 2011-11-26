@@ -161,6 +161,8 @@ public class Node extends Thread {
 								synchronized (job.isJobDone) {
 									job.isJobDone.notify();
 								}
+								oos.close();
+								slaveSocket.close();
 								this.status = Node.AVAILABLE;
 								return;
 							}
