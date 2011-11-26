@@ -83,6 +83,7 @@ public class Client {
 						return false;
 					} else {
 						System.out.println("Job successful added");
+						System.out.println("Your jobID is " + jobID);
 						ReadInput ri = new ReadInput(jobID, oos);
 						ri.start();
 					}
@@ -102,7 +103,7 @@ public class Client {
 						return false;
 					} 
 					System.out.println("Result downloaded!");
-					oos = new ObjectOutputStream(s.getOutputStream());
+					System.out.println("Result is stored in " + outputFilePath);
 					oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
 					oos.flush();
 					oos.close();
