@@ -23,6 +23,7 @@ public class JobHandler extends Thread {
 	private Socket clientSocket;
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
+	private long jobID;
 	
 	public JobHandler(Socket s) {
 		super();
@@ -45,7 +46,7 @@ public class JobHandler extends Thread {
 					Long fileLength = ijc.fileLength;
 					//System.out.println("Rep number is " + repNum);
 					//Thread.sleep(2000);
-					long jobID = addJob(repNum, time, fileLength);
+					jobID = addJob(repNum, time, fileLength);
 					InitJobAck ija = new InitJobAck(Command.InitJobAck, jobID);
 					oos.writeObject(ija);
 					oos.flush();
@@ -69,9 +70,11 @@ public class JobHandler extends Thread {
 					if (da.status < 0) {
 						System.out.println("Client download result error!");
 					} else {
+						System.out.println("Client successfully downloaded!");
 						ois.close();
 						oos.close();
 						clientSocket.close();
+						JobTracker.removeJob(jobID);
 						return;
 					}
 				}
@@ -96,7 +99,7 @@ public class JobHandler extends Thread {
 		System.out.println("File length is " + fileLength);
 		
 		Job job = new Job(repNum, clientSocket, oos, time);    //Create a new job
-		long jobID = job.getJobID();
+		jobID = job.getJobID();
 	
 		//Make directory according to the unique jobID
 		File dir = new File(master.Parameters.masterDataPath + "/" + jobID);
