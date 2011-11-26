@@ -28,6 +28,7 @@ public class Job extends Thread {
 	public int time;
 	public Date startTime;
 	public Date endTime;
+	private int finishedRep;
 	
 	/**
 	 * Create new Job with number of replications, fileName and client obj
@@ -41,6 +42,7 @@ public class Job extends Thread {
 		this.oos = oos;
 		this.clientSocket = clientSocket;
 		jobID = getNextJobID();
+		finishedRep = 0;
 	//	this.isJobDone = isJobDone;
 	}
 	
@@ -83,7 +85,7 @@ public class Job extends Thread {
 		//MERGE RESULT: TO BE DONE
 		
 		//Upload result to client
-		File file = new File(Parameters.masterResultPath + "/" + common.Parameters.resultFileName);
+		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + common.Parameters.resultFileName);
 		long fileLength = file.length();
 		try {
 			oos.writeObject(new DownloadCommand(Command.DownloadCommand, fileLength));
@@ -93,6 +95,8 @@ public class Job extends Thread {
 
 		if (!FileOperator.uploadFile(clientSocket, file.getAbsolutePath(), fileLength)) {
 			System.out.println("Upload result to client error!");
+		} else {
+			System.out.println("Result uploaded to client!");
 		}
 	}
 	
@@ -115,13 +119,14 @@ public class Job extends Thread {
 				slaveList.get(i).removeRep(repNum);
 			}
 		}
+		finishedRep++;
 	}
 	
 	/**
 	 * Check if all nodes finishes their assignment
 	 * @return
 	 */
-	public boolean checkNodeStatus() {
+	synchronized public boolean checkNodeStatus() {
 		for (int i = 0; i < slaveList.size(); i++) {
 			if (!slaveList.get(i).isEmptyRep()) {
 				return false;
@@ -139,6 +144,6 @@ public class Job extends Thread {
 	}
 	
 	public int getFinishedRep() {
-		return 4;
+		return finishedRep;
 	}
 }
