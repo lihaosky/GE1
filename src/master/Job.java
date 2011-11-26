@@ -50,23 +50,29 @@ public class Job extends Thread {
 	 * Start the job
 	 */
 	public void run() {
-		slaveList = NodeManager.getNodes(1);
+	
+		slaveList = NodeManager.getNodes(2);
 		if (slaveList == null) {
 			System.out.println("Can't get slave!");
 			return;
 		}
-		
-		ArrayList<Integer> taskList = new ArrayList<Integer>();
-		for (int i = 1; i <= repNum; i++) {
-			taskList.add(i);
-		}
-
-		if (slaveList.get(0).addAssignment(jobID, taskList) != Message.OK) {
-			System.out.println("Add assignment to slave error!");
-			slaveList.get(0).clearRep();
-			return;
-		} else {
-			slaveList.get(0).start();
+		for (int j = 0; j < 2; j++) {
+			ArrayList<Integer> taskList = new ArrayList<Integer>();
+			for (int i = j; i <= repNum; i++) {
+				if(i%2==j) {
+					taskList.add(i);
+				}
+			}
+	
+			if (slaveList.get(j).addAssignment(jobID, taskList) != Message.OK) {
+				System.out.println("Add assignment to slave error!");
+				slaveList.get(j).clearRep();
+				return;
+			} else {
+				slaveList.get(j).start();
+				System.out.println("Slave: " + (j+1) + " Started!");
+			}
+			
 		}
 		
 		System.out.println("Job " + jobID + " started in slaves!");
