@@ -26,4 +26,12 @@ public class JobTracker {
 	synchronized public static Job getJob(long jobID) {
 		return jobMap.get(jobID);
 	}
+	
+	/**
+	 * Remove job
+	 * @param jobID JobID
+	 */
+	synchronized public static void removeJob(long jobID) {
+		jobMap.remove(jobID);
+	}
 }
