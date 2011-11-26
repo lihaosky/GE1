@@ -365,6 +365,25 @@ public class FileOperator {
 	}
 	
 	/**
+	 * Delete all files in the directory
+	 * @param dir Directory name
+	 * @return
+	 */
+	public static boolean removeAllFiles(File dir) {
+		String[] list = dir.list();
+		for (int i = 0; i < list.length; i++) {
+			File file = new File(dir.getAbsolutePath() + "/" + list[i]);
+			if (file.exists()) {
+				if (!file.delete()) {
+					System.out.println("Can't delete file " + file.getAbsolutePath());
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * Get data file path of jobID in slave
 	 * @param jobID JobID
 	 * @return Slave data file path of jobID
