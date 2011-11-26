@@ -20,7 +20,6 @@ public class Assignment extends Thread {
 	private ArrayList<Integer> repList;
 	private Socket masterSocket;
 	private ObjectOutputStream oos;
-	
 	/**
 	 * Assignment constructor
 	 * @param nodeID This nodeID
@@ -46,9 +45,12 @@ public class Assignment extends Thread {
 			System.out.println("Create directory for replication " + rep + "...");
 			File file = new File(FileOperator.slaveRepPath(jobID, rep));
 			FileOperator.makeDir(file);
-			file = new File(FileOperator.slaveDataPath(jobID));
+			
+			//Remove all the files in this directory
+			FileOperator.removeAllFiles(file);
 			
 			//Unzip data.zip to replication directory
+			file = new File(FileOperator.slaveDataPath(jobID));
 			System.out.println("Unzip data file...");
 			if (!FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep))) {
 				System.out.println("Unzip file error!");
@@ -85,6 +87,9 @@ public class Assignment extends Thread {
 			//Zip the output file and send it to master
 			System.out.println("Zip result...");
 			String[] extraFile = new String[common.Parameters.neededInputFiles.length + 1];
+			for (int j = 0; j < extraFile.length - 1; j++) {
+				extraFile[j] = common.Parameters.neededInputFiles[j];
+			}
 			extraFile[common.Parameters.neededInputFiles.length] = "marsMain";
 			if (!FileOperator.zipExcludeFile(new File(FileOperator.slaveRepPath(jobID, rep)), extraFile)) {
 				System.out.println("Zip result error!");
@@ -106,12 +111,9 @@ public class Assignment extends Thread {
 			if (!FileOperator.uploadFile(masterSocket, filePath, file.length())) {
 				System.out.println("Upload replication to master error!");
 			}
+			
 		}
-		try {
-			masterSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		System.out.println("Finished executions!");
 	}
 	
 	/**
