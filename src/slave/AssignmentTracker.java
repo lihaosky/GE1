@@ -27,4 +27,8 @@ public class AssignmentTracker {
 	synchronized public static Assignment getAssignment(long assignID) {
 		return assignmentMap.get(assignID);
 	}
+	
+	synchronized public static void removeAssignment(long assignID) {
+		assignmentMap.remove(assignID);
+	}
 }
