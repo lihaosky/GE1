@@ -25,6 +25,7 @@ public class AssignmentHandler extends Thread {
 	public long jobID;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
+	private int repNum;
 	
 	public AssignmentHandler(Socket s) {
 		super();
@@ -58,12 +59,14 @@ public class AssignmentHandler extends Thread {
 				else if (cmd.commandID == Command.DownloadAck) {
 					DownloadAck da = (DownloadAck)cmd;
 					if (da.status > 0) {
-						Assignment a = AssignmentTracker.getAssignment(jobID);
+						repNum--;
 						//No more replication to execute
-						if (a.getRepListSize() == 0) {
+						if (repNum == 0) {
+							System.out.println("Master downloaded all the replications!");
 							ois.close();
 							oos.close();
 							masterSocket.close();
+							AssignmentTracker.removeAssignment(jobID);
 							return;
 						}
 					}
@@ -72,6 +75,7 @@ public class AssignmentHandler extends Thread {
 				else if (cmd.commandID == Command.AddRepCommand) {
 					AddRepCommand arc = (AddRepCommand)cmd;
 					Assignment a = AssignmentTracker.getAssignment(jobID);
+					repNum++;
 					a.addRep(arc.repList);
 				}
 			}
@@ -87,6 +91,7 @@ public class AssignmentHandler extends Thread {
 	 */
 	public int addAssignment(int nodeID, long jobID, long fileLength, ArrayList<Integer> repList) {
 		this.jobID = jobID;
+		repNum = repList.size();
 		
 		//Make data directory
 		System.out.println("Making data directory...");
