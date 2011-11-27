@@ -7,13 +7,13 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import common.AddRepCommand;
-import common.Command;
-import common.DownloadAck;
 import common.FileOperator;
-import common.InitAssignmentCommand;
-import common.InitJobAck;
 import common.Message;
+import common.command.AddRepCommand;
+import common.command.Command;
+import common.command.DownloadAck;
+import common.command.InitAssignmentCommand;
+import common.command.InitJobAck;
 
 /**
  * This class handle request from master to initiate assignment and upload result
@@ -26,6 +26,7 @@ public class AssignmentHandler extends Thread {
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
 	private int repNum;
+	private int nodeID;
 	
 	public AssignmentHandler(Socket s) {
 		super();
@@ -43,7 +44,7 @@ public class AssignmentHandler extends Thread {
 				if (cmd.commandID == Command.InitAssignmentCommand) {
 					InitAssignmentCommand iac = (InitAssignmentCommand)cmd;
 					long jobID = iac.jobID;
-					int nodeID = iac.nodeID;
+					this.nodeID = iac.nodeID;
 					long fileLength = iac.fileLength;
 					ArrayList<Integer> repList = iac.repList;
 					int status = addAssignment(nodeID, jobID, fileLength, repList);
@@ -75,8 +76,15 @@ public class AssignmentHandler extends Thread {
 				else if (cmd.commandID == Command.AddRepCommand) {
 					AddRepCommand arc = (AddRepCommand)cmd;
 					Assignment a = AssignmentTracker.getAssignment(jobID);
-					repNum++;
-					a.addRep(arc.repList);
+					repNum += arc.repList.size();
+					if (!a.isFinished()) {
+						a.addRep(arc.repList);
+					} else {
+						AssignmentTracker.removeAssignment(jobID);
+						Assignment assignment = new Assignment(nodeID, jobID, arc.repList, masterSocket, oos);
+						AssignmentTracker.addAssignment(jobID, assignment);
+						assignment.start();
+					}
 				}
 			}
 		} catch (IOException e) {
