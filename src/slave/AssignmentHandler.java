@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 import common.FileOperator;
@@ -25,7 +26,6 @@ public class AssignmentHandler extends Thread {
 	public long jobID;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
-	private int repNum;
 	private int nodeID;
 	
 	public AssignmentHandler(Socket s) {
@@ -57,40 +57,55 @@ public class AssignmentHandler extends Thread {
 					}
 				}
 				//Download ack from master
-				else if (cmd.commandID == Command.DownloadAck) {
+				if (cmd.commandID == Command.DownloadAck) {
 					DownloadAck da = (DownloadAck)cmd;
 					if (da.status > 0) {
-						repNum--;
-						//No more replication to execute
-						if (repNum == 0) {
-							System.out.println("Master downloaded all the replications!");
-							ois.close();
-							oos.close();
-							masterSocket.close();
-							AssignmentTracker.removeAssignment(jobID);
-							return;
-						}
+						System.out.println("Master downloaded the replications!");
+					} 
+					//If fails, this node is treated as dead
+					else {
+						Assignment a = AssignmentTracker.getAssignment(jobID);
+						a.setIsFinished();
+						AssignmentTracker.removeAssignment(jobID);
+						oos.writeObject(new Command(Command.FinishedAck));
+						oos.flush();
+						oos.close();
+						ois.close();
+						masterSocket.close();
 					}
 				}
 				//Add more replication from master
-				else if (cmd.commandID == Command.AddRepCommand) {
+				if (cmd.commandID == Command.AddRepCommand) {
 					AddRepCommand arc = (AddRepCommand)cmd;
 					Assignment a = AssignmentTracker.getAssignment(jobID);
-					repNum += arc.repList.size();
-					if (!a.isFinished()) {
-						a.addRep(arc.repList);
-					} else {
-						AssignmentTracker.removeAssignment(jobID);
-						Assignment assignment = new Assignment(nodeID, jobID, arc.repList, masterSocket, oos);
-						AssignmentTracker.addAssignment(jobID, assignment);
-						assignment.start();
-					}
+					a.addRep(arc.repList);
+				}
+				if (cmd.commandID == Command.FinishedCommand) {
+					Assignment a = AssignmentTracker.getAssignment(jobID);
+					a.setIsFinished();
+					AssignmentTracker.removeAssignment(jobID);
+					oos.writeObject(new Command(Command.FinishedAck));
+					oos.flush();
+					oos.close();
+					ois.close();
+					masterSocket.close();
 				}
 			}
+		} catch(SocketException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				masterSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Assignment a = AssignmentTracker.getAssignment(jobID);
+			a.setIsFinished();
+			AssignmentTracker.removeAssignment(jobID);
 		}
 	}
 	
@@ -99,7 +114,6 @@ public class AssignmentHandler extends Thread {
 	 */
 	public int addAssignment(int nodeID, long jobID, long fileLength, ArrayList<Integer> repList) {
 		this.jobID = jobID;
-		repNum = repList.size();
 		
 		//Make data directory
 		System.out.println("Making data directory...");

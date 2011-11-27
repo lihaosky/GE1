@@ -16,7 +16,6 @@ import common.command.CheckStatusCommand;
 import common.command.Command;
 import common.command.DownloadAck;
 import common.command.DownloadCommand;
-import common.command.ErrorAck;
 import common.command.ErrorCommand;
 import common.command.InitJobAck;
 import common.command.InitJobCommand;
@@ -122,7 +121,7 @@ public class Client {
 				if (cmd.commandID == Command.ErrorMessage) {
 					ErrorCommand em = (ErrorCommand)cmd;
 					System.out.println(em.message);
-					oos.writeObject(new ErrorAck(Command.ErrorAck));
+					oos.writeObject(new Command(Command.ErrorAck));
 					oos.flush();
 					s.close();
 					return false;

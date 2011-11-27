@@ -65,6 +65,9 @@ public class Slave {
 		if (!slave.checkDirAndFile()) {
 			return;
 		}
+		System.out.println("Heart beat started...");
+		Heartbeat hb = new Heartbeat();
+		hb.start();
 		System.out.println("Slave started...");
 		slave.start();
 	}

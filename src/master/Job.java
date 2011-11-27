@@ -25,7 +25,6 @@ public class Job extends Thread {
 	private Socket clientSocket;
 	private int repNum;
 	private ArrayList<Node> slaveList;
-	public Object isJobDone = new Object();   //Used to wait for job to be done
 	public int time;
 	public Date startTime;
 	public Date endTime;
@@ -44,7 +43,6 @@ public class Job extends Thread {
 		this.clientSocket = clientSocket;
 		jobID = getNextJobID();
 		finishedRep = 0;
-	//	this.isJobDone = isJobDone;
 	}
 	
 	/**
@@ -52,7 +50,7 @@ public class Job extends Thread {
 	 */
 	public void run() {
 	
-		slaveList = NodeManager.getNodes(2);
+		slaveList = NodeManager.getNodes(time);
 		if (slaveList == null) {
 			System.out.println("Can't get slave!");
 			try {
@@ -74,22 +72,76 @@ public class Job extends Thread {
 			}
 			return;
 		}
-		
-		//Heart beat thing
-		
-		
 		System.out.println("Job " + jobID + " started in slaves!");
 		
-		try {
-			synchronized(isJobDone) {
-				isJobDone.wait();
+		//Keep heartbeating if not all the nodes finished
+		while (true) {
+			//All replications has been finished
+			if (this.checkNodeStatus()) {
+				break;
 			}
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+			
+			ArrayList<Node> failedNode = new ArrayList<Node>(); //Failed nodes
+			ArrayList<Integer> reAllocateRep = new ArrayList<Integer>();  //Replications of failed nodes
+			
+			for (int i = 0; i < slaveList.size(); i++) {
+				Node node = slaveList.get(i);
+				//Heartbeat fails
+				if (!node.heartBeat()) {
+					failedNode.add(node);
+					node.setStatus(Node.DEAD);
+					//Get remaining replication of this node
+					ArrayList<Integer> remainRep = node.getRep();
+					for (int j = 0; j < remainRep.size(); j++) {
+						reAllocateRep.add(remainRep.get(j));
+					}
+					node.clearRep();
+					node.halt();
+				}
+			}
+			
+			//Remove failed nodes
+			for (int i = 0; i < failedNode.size(); i++) {
+				slaveList.remove(failedNode.get(i));
+			}
+			
+			//All nodes fail
+			if (slaveList.size() == 0) {
+				System.out.println("All nodes failed!");
+				try {
+					oos.writeObject(new ErrorCommand(Command.ErrorMessage, "All nodes failed!"));
+					oos.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+			//Add remaining replications to working nodes
+			//Assume they will not fail when adding replications...
+			for (int i = 0; i < slaveList.size(); i++) {
+				ArrayList<Integer> taskList = new ArrayList<Integer>();
+				for (int j = i; j < reAllocateRep.size(); j++) {
+					if (j % slaveList.size() == i) {
+						taskList.add(reAllocateRep.get(j));
+					}
+					slaveList.get(i).addRep(taskList); //Assume this will not fail...
+				}
+			}
+			
+			//Wait for 2 seconds before next heartbeat
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		System.out.println("Job is done!");
 		
+		//Stop all slaves
+		for (int i = 0; i < slaveList.size(); i++) {
+			slaveList.get(i).finish();
+		}
 		
 		//MERGE RESULT: TO BE DONE
 		
@@ -133,12 +185,13 @@ public class Job extends Thread {
 				}
 			}
 			if (slaveList.get(i).addAssignment(jobID, taskList) != Message.OK) {
-				System.out.println("Add assignment to slave error!");
+				System.out.println("Add assignment to slave " + slaveList.get(i).getNodeID() + " error!");
 				slaveList.get(i).clearRep();
 				failedNode.add(slaveList.get(i));
+				slaveList.get(i).setStatus(Node.DEAD);
 			} else {
 				slaveList.get(i).start();
-				System.out.println("Slave: " + (i+1) + " Started!");
+				System.out.println("Slave: " + slaveList.get(i).getNodeID() + " Started!");
 				//Remove added replication number
 				for (int k = 0; k < index.size(); k++) {
 					repList.remove(index.get(k));
@@ -185,15 +238,8 @@ public class Job extends Thread {
 	
 	/**
 	 * Update the repList when result is fetched
-	 * @param nodeID NodeID which needs update
-	 * @param repNum Replication number to be removed
 	 */
-	synchronized public void updateRepList(int nodeID, int repNum) {
-		for (int i = 0; i < slaveList.size(); i++) {
-			if (slaveList.get(i).getNodeID() == nodeID) {
-				slaveList.get(i).removeRep(repNum);
-			}
-		}
+	synchronized public void updateRepList() {
 		finishedRep++;
 	}
 	

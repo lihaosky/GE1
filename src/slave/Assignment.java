@@ -40,91 +40,83 @@ public class Assignment extends Thread {
 	 * Start the exectution of replication
 	 */
 	public void run() {
-		for (int i = 0; i < this.getRepListSize(); i++) {
-			int rep = this.getRep(i);
-			
-			//Create directory for replication 
-			System.out.println("Create directory for replication " + rep + "...");
-			File file = new File(FileOperator.slaveRepPath(jobID, rep));
-			FileOperator.makeDir(file);
-			
-			//Remove all the files in this directory
-			FileOperator.removeAllFiles(file);
-			
-			//Unzip data.zip to replication directory
-			file = new File(FileOperator.slaveDataPath(jobID));
-			System.out.println("Unzip data file...");
-			if (!FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep))) {
-				System.out.println("Unzip file error!");
-			}
-			
-			//Copy marsMain to replication directory
-			System.out.println("Copy marsMain...");
-			if (!FileOperator.cpFile(new File(slave.Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"))) {
-				System.out.println("Copy file error!");
-			}
-			//Mars.ctl will be provided by client
-			//FileOperator.cpFile(new File(slave.Parameters.marsMainCtlLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"));
-			
-			/*********************************************
-			 * NEED TO EDIT mars.ctl                     *
-			 ********************************************/
-			//Edit the mars.ctl
-			System.out.println("Edit the mars.ctl file...");
-			if (!FileOperator.editMarsCtl(new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"), rep)) {
-				System.out.println("Edit mars.ctl in " + rep + " error!");
-			}
-			
-			//Start execution
-			System.out.println("Start execution of replication " + rep + "...");
-			try {
-				Process p = Runtime.getRuntime().exec("./marsMain mars.ctl", null, new File(FileOperator.slaveRepPath(jobID, rep)));
-				p.waitFor();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			//Zip the output file and send it to master
-			System.out.println("Zip result...");
-			String[] extraFile = new String[common.Parameters.neededInputFiles.length + 1];
-			for (int j = 0; j < extraFile.length - 1; j++) {
-				extraFile[j] = common.Parameters.neededInputFiles[j];
-			}
-			extraFile[common.Parameters.neededInputFiles.length] = "marsMain";
-			if (!FileOperator.zipExcludeFile(new File(FileOperator.slaveRepPath(jobID, rep)), extraFile)) {
-				System.out.println("Zip result error!");
-			}
-			
-			/*
-			//Fake!
-			String resultPath = "/home/lihao/Desktop/GE_Project/p1/result.zip";
-			FileOperator.cpFile(new File(resultPath), new File(FileOperator.slaveResultPath(jobID, rep)));*/
-			
-			System.out.println("Upload replication " + rep + " to master...");
-			String filePath = FileOperator.slaveResultPath(jobID, rep);
-			file = new File(filePath);
-			try {
-				oos.writeObject(new DownloadRepCommand(Command.DownloadRepCommand, rep, file.length()));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (!FileOperator.uploadFile(masterSocket, filePath, file.length())) {
-				System.out.println("Upload replication to master error!");
-			}
-			
-			//Some replication may be added
-			if (i == getRepListSize() - 1) {
+		int i = 0;
+		while (!isFinished()) {
+			for (; i < this.getRepListSize(); i++) {
+				int rep = this.getRep(i);
+				
+				//Create directory for replication 
+				System.out.println("Create directory for replication " + rep + "...");
+				File file = new File(FileOperator.slaveRepPath(jobID, rep));
+				FileOperator.makeDir(file);
+				
+				//Remove all the files in this directory
+				FileOperator.removeAllFiles(file);
+				
+				//Unzip data.zip to replication directory
+				file = new File(FileOperator.slaveDataPath(jobID));
+				System.out.println("Unzip data file...");
+				if (!FileOperator.unzipFile(file, FileOperator.slaveRepPath(jobID, rep))) {
+					System.out.println("Unzip file error!");
+				}
+				
+				//Copy marsMain to replication directory
+				System.out.println("Copy marsMain...");
+				if (!FileOperator.cpFile(new File(slave.Parameters.marsMainLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "marsMain"))) {
+					System.out.println("Copy file error!");
+				}
+				//Mars.ctl will be provided by client
+				//FileOperator.cpFile(new File(slave.Parameters.marsMainCtlLocation), new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"));
+				
+				//Edit the mars.ctl
+				System.out.println("Edit the mars.ctl file...");
+				if (!FileOperator.editMarsCtl(new File(FileOperator.slaveRepPath(jobID, rep) + "/" + "mars.ctl"), rep)) {
+					System.out.println("Edit mars.ctl in " + rep + " error!");
+				}
+				
+				//Start execution
+				System.out.println("Start execution of replication " + rep + "...");
 				try {
-					Thread.sleep(10000);
+					Process p = Runtime.getRuntime().exec("./marsMain mars.ctl", null, new File(FileOperator.slaveRepPath(jobID, rep)));
+					p.waitFor();
+				} catch (IOException e1) {
+					e1.printStackTrace();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				
+				//Zip the output file
+				System.out.println("Zip result...");
+				String[] extraFile = new String[common.Parameters.neededInputFiles.length + 1];
+				for (int j = 0; j < extraFile.length - 1; j++) {
+					extraFile[j] = common.Parameters.neededInputFiles[j];
+				}
+				extraFile[common.Parameters.neededInputFiles.length] = "marsMain";
+				if (!FileOperator.zipExcludeFile(new File(FileOperator.slaveRepPath(jobID, rep)), extraFile)) {
+					System.out.println("Zip result error!");
+				}
+				
+				//Upload result
+				System.out.println("Upload replication " + rep + " to master...");
+				String filePath = FileOperator.slaveResultPath(jobID, rep);
+				file = new File(filePath);
+				try {
+					oos.writeObject(new DownloadRepCommand(Command.DownloadRepCommand, rep, file.length()));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				if (!FileOperator.uploadFile(masterSocket, filePath, file.length())) {
+					System.out.println("Upload replication to master error!");
+				}
 			}
 			
+			//Some replication may be added, wait for 10 seconds before terminating
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		setIsFinished();
 		System.out.println("Finished executions!");
 	}
 	

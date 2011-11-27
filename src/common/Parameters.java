@@ -36,4 +36,8 @@ public class Parameters {
 	 * Slave port number
 	 */
 	public static int slavePort = 1099;
+	/**
+	 * Heartbeat port number
+	 */
+	public static int HBport = 4321;
 }

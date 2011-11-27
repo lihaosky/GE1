@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
@@ -24,17 +25,21 @@ import common.command.InitJobAck;
  */
 public class Node extends Thread {
 	private static int nextNodeID = 1;
+	public static int DEAD = 0;
+	public static int AVAILABLE = 1;
+	public static int BUSY = 2;
+	
 	private int nodeID;
 	private long jobID;
 	private String IPAddress;
 	private Socket slaveSocket;
 	private ArrayList<Integer> repList;
 	private int status;
-	public static int DEAD = 0;
-	public static int AVAILABLE = 1;
-	public static int BUSY = 2;
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
+	private Socket HBsocket;
+	private ObjectOutputStream HBoos;
+	private ObjectInputStream HBois;
 	
 	/**
 	 * @param IPAddress Node IP address
@@ -89,6 +94,23 @@ public class Node extends Thread {
 	 * @param jobAssigner Job Assigner
 	 */
 	public int addAssignment(long jobID, ArrayList<Integer> repList) {
+		try {
+			HBsocket = new Socket(this.IPAddress, common.Parameters.HBport);
+			HBoos = new ObjectOutputStream(HBsocket.getOutputStream());
+			HBois = new ObjectInputStream(HBsocket.getInputStream());
+		} catch (UnknownHostException e2) {
+			System.err.println("Error connecting to heartbeat!");
+			try {
+				slaveSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			e2.printStackTrace();
+			return Message.UploadError;
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+		
 		this.jobID = jobID;
 		this.repList = repList;
 		File file = new File(FileOperator.masterDataPath(jobID));
@@ -147,13 +169,18 @@ public class Node extends Thread {
 						FileOperator.makeDir(file);
 						String filePath = FileOperator.masterResultPath(jobID, rep);
 						System.out.println("Downloading replication " + rep + " from node " + nodeID + " ...");
+						
+						//Regard this node as failed node, heartbeat will reallocate this node's replication
 						if (!FileOperator.storeFile(slaveSocket, filePath, fileLength)) {
 							System.out.println("Download replication error!");
 							oos.writeObject(new DownloadAck(Command.DownloadAck, -1));
 							oos.flush();
 							oos.close();
 							slaveSocket.close();
-							this.status = Node.AVAILABLE;
+							HBoos.close();
+							HBois.close();
+							HBsocket.close();
+							return;
 						} else {
 							System.out.println("Download replication success!");
 							if (!FileOperator.unzipFile(new File(FileOperator.masterResultPath(jobID, rep)), FileOperator.masterRepPath(jobID, rep))) {
@@ -161,28 +188,22 @@ public class Node extends Thread {
 							}
 							oos.writeObject(new DownloadAck(Command.DownloadAck, 1));
 							oos.flush();
-							//oos.close();
 							Job job = JobTracker.getJob(jobID);
-							job.updateRepList(nodeID, rep);
-							if (job.checkNodeStatus()) {
-								synchronized (job.isJobDone) {
-									job.isJobDone.notify();
-								}
-								oos.close();
-								slaveSocket.close();
-								this.status = Node.AVAILABLE;
-								return;
-							}
+							job.updateRepList();
 							removeRep(rep);
-							if (this.isEmptyRep()) {
-								oos.close();
-								slaveSocket.close();
-								this.status = Node.AVAILABLE;
-								return;
-							}
 						}
 					}
+					if (cmd.commandID == Command.FinishedAck) {
+						oos.close();
+						ois.close();
+						slaveSocket.close();
+						HBoos.close();
+						HBois.close();
+						HBsocket.close();
+					}
 			}
+		} catch (SocketException e) {
+			System.out.println("Close socket to slave " + this.IPAddress);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -190,6 +211,26 @@ public class Node extends Thread {
 		}
 	}
 	
+	public boolean heartBeat() {
+		try {
+			HBoos.writeObject(new Command(Command.PingCommand));
+			Command cmd = (Command)HBois.readObject();
+			if (cmd.commandID == Command.PingAck) {
+				return true;
+			} else {
+				System.out.println("Ping " + this.IPAddress + " error!");
+				return false;
+			}
+		} catch (IOException e) {
+			System.out.println("Ping " + this.IPAddress + " error!");
+			e.printStackTrace();
+			return false;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
 	
 	/**
 	 * Get nodeID
@@ -226,6 +267,10 @@ public class Node extends Thread {
 		}
 	}
 	
+	synchronized ArrayList<Integer> getRep() {
+		return repList;
+	}
+	
 	/**
 	 * Clear the replication list of this node
 	 */
@@ -237,7 +282,7 @@ public class Node extends Thread {
 	 * Check if there is still replication pending in this node
 	 * @return
 	 */
-	public boolean isEmptyRep() {
+	synchronized public boolean isEmptyRep() {
 		return repList.size() == 0 ? true : false;
 	}
 	
@@ -263,5 +308,26 @@ public class Node extends Thread {
 	 */
 	synchronized static int getNextNodeID() {
 		return nextNodeID++;
+	}
+	
+	/**
+	 * In case of node failure, close all sockets
+	 */
+	public void halt() {
+		try {
+			slaveSocket.close();
+			HBsocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void finish() {
+		try {
+			oos.writeObject(new Command(Command.FinishedCommand));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

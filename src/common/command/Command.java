@@ -24,4 +24,8 @@ public class Command implements Serializable {
 	public static int AddRepCommand = 8;
 	public static int ErrorMessage = 9;
 	public static int ErrorAck = 10;
+	public static int PingCommand = 11;
+	public static int PingAck = 12;
+	public static int FinishedCommand = 13;
+	public static int FinishedAck = 14;
 }
