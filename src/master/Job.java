@@ -7,10 +7,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 
-import common.Command;
-import common.DownloadCommand;
 import common.FileOperator;
 import common.Message;
+import common.command.Command;
+import common.command.DownloadCommand;
+import common.command.ErrorCommand;
 
 /**
  * This class represents a job by a client
@@ -54,26 +55,28 @@ public class Job extends Thread {
 		slaveList = NodeManager.getNodes(2);
 		if (slaveList == null) {
 			System.out.println("Can't get slave!");
+			try {
+				oos.writeObject(new ErrorCommand(Command.ErrorMessage, "Can't find nodes!"));
+				oos.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		}
-		for (int j = 0; j < 2; j++) {
-			ArrayList<Integer> taskList = new ArrayList<Integer>();
-			for (int i = j; i <= repNum; i++) {
-				if(i%2==j) {
-					taskList.add(i);
-				}
+		
+		if (!allocateRep()) {
+			System.out.println("Allocate assignments failed in all slaves!");
+			try {
+				oos.writeObject(new ErrorCommand(Command.ErrorMessage, "Allocate job failed!"));
+				oos.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-	
-			if (slaveList.get(j).addAssignment(jobID, taskList) != Message.OK) {
-				System.out.println("Add assignment to slave error!");
-				slaveList.get(j).clearRep();
-				return;
-			} else {
-				slaveList.get(j).start();
-				System.out.println("Slave: " + (j+1) + " Started!");
-			}
-			
+			return;
 		}
+		
+		//Heart beat thing
+		
 		
 		System.out.println("Job " + jobID + " started in slaves!");
 		
@@ -95,6 +98,7 @@ public class Job extends Thread {
 		long fileLength = file.length();
 		try {
 			oos.writeObject(new DownloadCommand(Command.DownloadCommand, fileLength));
+			oos.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -104,6 +108,71 @@ public class Job extends Thread {
 		} else {
 			System.out.println("Result uploaded to client!");
 		}
+	}
+	
+	/**
+	 * Allocate replications to slaves
+	 * @return False if all the slaves die
+	 */
+	public boolean allocateRep() {
+		ArrayList<Integer> repList = new ArrayList<Integer>();  //Replication number list
+		ArrayList<Node> failedNode = new ArrayList<Node>();     //Failed node list
+		
+		for (int i = 1; i <= repNum; i++) {
+			repList.add(i);
+		}
+		
+		for (int i = 0; i < slaveList.size(); i++) {
+			ArrayList<Integer> index = new ArrayList<Integer>();   //Allocated replication index
+			ArrayList<Integer> taskList = new ArrayList<Integer>();//Replication list for one node
+			
+			for (int j = 0; j < repList.size(); j++) {
+				if (repList.get(j) % slaveList.size() == (i + 1)) {
+					taskList.add(repList.get(j));
+					index.add(j);
+				}
+			}
+			if (slaveList.get(i).addAssignment(jobID, taskList) != Message.OK) {
+				System.out.println("Add assignment to slave error!");
+				slaveList.get(i).clearRep();
+				failedNode.add(slaveList.get(i));
+			} else {
+				slaveList.get(i).start();
+				System.out.println("Slave: " + (i+1) + " Started!");
+				//Remove added replication number
+				for (int k = 0; k < index.size(); k++) {
+					repList.remove(index.get(k));
+				}
+			}
+		}
+		
+		//All replications has been added
+		if (repList.size() == 0) {
+			return true;
+		}
+		
+		//Remove failed node
+		for (int i = 0; i < failedNode.size(); i++) {
+			slaveList.remove(failedNode.get(i));
+		}
+		//All nodes fail...
+		if (slaveList.size() == 0) {
+			return false;
+		}
+		
+		//Add remaining replications to working nodes
+		//Assume they will not fail when adding replications...
+		for (int i = 0; i < slaveList.size(); i++) {
+			ArrayList<Integer> taskList = new ArrayList<Integer>();
+			for (int j = i; j < repList.size(); j++) {
+				if (j % slaveList.size() == i) {
+					taskList.add(repList.get(j));
+				}
+				slaveList.get(i).addRep(taskList); //Assume this will not fail...
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
