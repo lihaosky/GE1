@@ -65,7 +65,9 @@ public class AssignmentHandler extends Thread {
 					//If fails, this node is treated as dead
 					else {
 						Assignment a = AssignmentTracker.getAssignment(jobID);
-						a.setIsFinished();
+						if (a != null) {
+							a.setIsFinished();
+						}
 						AssignmentTracker.removeAssignment(jobID);
 						oos.writeObject(new Command(Command.FinishedAck));
 						oos.flush();
@@ -82,7 +84,9 @@ public class AssignmentHandler extends Thread {
 				}
 				if (cmd.commandID == Command.FinishedCommand) {
 					Assignment a = AssignmentTracker.getAssignment(jobID);
-					a.setIsFinished();
+					if (a != null) {
+						a.setIsFinished();
+					}
 					AssignmentTracker.removeAssignment(jobID);
 					oos.writeObject(new Command(Command.FinishedAck));
 					oos.flush();
@@ -104,7 +108,9 @@ public class AssignmentHandler extends Thread {
 				e.printStackTrace();
 			}
 			Assignment a = AssignmentTracker.getAssignment(jobID);
-			a.setIsFinished();
+			if (a != null) {
+				a.setIsFinished();
+			}
 			AssignmentTracker.removeAssignment(jobID);
 		}
 	}

@@ -102,13 +102,21 @@ public class Node extends Thread {
 			System.err.println("Error connecting to heartbeat!");
 			try {
 				slaveSocket.close();
+				HBsocket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			e2.printStackTrace();
 			return Message.UploadError;
 		} catch (IOException e2) {
+			try {
+				slaveSocket.close();
+				HBsocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			e2.printStackTrace();
+			return Message.UploadError;
 		}
 		
 		this.jobID = jobID;
@@ -135,6 +143,7 @@ public class Node extends Thread {
 			if (ija.jobID < 0) {
 				System.out.println("Add asignment error in slave!");
 				slaveSocket.close();
+				HBsocket.close();
 				return Message.UploadError;
 			}
 			System.out.println("Add assignemnt successfully!");
@@ -142,6 +151,7 @@ public class Node extends Thread {
 			System.out.println("IO error!");
 			try {
 				slaveSocket.close();
+				HBsocket.close();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -200,6 +210,7 @@ public class Node extends Thread {
 						HBoos.close();
 						HBois.close();
 						HBsocket.close();
+						return;
 					}
 			}
 		} catch (SocketException e) {
@@ -322,6 +333,9 @@ public class Node extends Thread {
 		}
 	}
 	
+	/**
+	 * Ask slave to stop since all replications has been finished
+	 */
 	public void finish() {
 		try {
 			oos.writeObject(new Command(Command.FinishedCommand));
