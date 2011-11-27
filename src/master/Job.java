@@ -116,15 +116,19 @@ public class Job extends Thread {
 				}
 				return;
 			}
+			
+			
 			//Add remaining replications to working nodes
 			//Assume they will not fail when adding replications...
-			for (int i = 0; i < slaveList.size(); i++) {
-				ArrayList<Integer> taskList = new ArrayList<Integer>();
-				for (int j = i; j < reAllocateRep.size(); j++) {
-					if (j % slaveList.size() == i) {
-						taskList.add(reAllocateRep.get(j));
+			if (reAllocateRep.size() != 0) {
+				for (int i = 0; i < slaveList.size(); i++) {
+					ArrayList<Integer> taskList = new ArrayList<Integer>();
+					for (int j = i; j < reAllocateRep.size(); j++) {
+						if (j % slaveList.size() == i) {
+							taskList.add(reAllocateRep.get(j));
+						}
+						slaveList.get(i).addRep(taskList); //Assume this will not fail...
 					}
-					slaveList.get(i).addRep(taskList); //Assume this will not fail...
 				}
 			}
 			
@@ -147,7 +151,18 @@ public class Job extends Thread {
 		
 		//Upload result to client
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + common.Parameters.resultFileName);
+		if (file.exists()) {
+			System.out.println("File " + file.getAbsolutePath() + " doesn't exist!");
+			try {
+				oos.writeObject(new ErrorCommand(Command.ErrorMessage, "Result file doesn't exist!"));
+				oos.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		long fileLength = file.length();
+		
 		try {
 			oos.writeObject(new DownloadCommand(Command.DownloadCommand, fileLength));
 			oos.flush();
@@ -179,9 +194,9 @@ public class Job extends Thread {
 			ArrayList<Integer> taskList = new ArrayList<Integer>();//Replication list for one node
 			
 			for (int j = 0; j < repList.size(); j++) {
-				if (repList.get(j) % slaveList.size() == (i + 1)) {
+				if ((repList.get(j) % slaveList.size()) == ((i + 1) % slaveList.size())) {
 					taskList.add(repList.get(j));
-					index.add(j);
+					index.add(repList.get(j));
 				}
 			}
 			if (slaveList.get(i).addAssignment(jobID, taskList) != Message.OK) {
@@ -191,16 +206,27 @@ public class Job extends Thread {
 				slaveList.get(i).setStatus(Node.DEAD);
 			} else {
 				slaveList.get(i).start();
-				System.out.println("Slave: " + slaveList.get(i).getNodeID() + " Started!");
+				System.out.println("Slave " + slaveList.get(i).getNodeID() + " Started!");
+				System.out.println("Slave " + slaveList.get(i).getNodeID() + " has replications:");
+				for (int j = 0; j < taskList.size(); j++) {
+					System.out.print(taskList.get(j) + " ");
+				}
+				System.out.println();
 				//Remove added replication number
 				for (int k = 0; k < index.size(); k++) {
-					repList.remove(index.get(k));
+					for (int j = 0; j < repList.size(); j++) {
+						if (repList.get(j) == index.get(k)) {
+							repList.remove(j);
+							break;
+						}
+					}
 				}
 			}
 		}
 		
 		//All replications has been added
 		if (repList.size() == 0) {
+			System.out.println("All replications added!");
 			return true;
 		}
 		

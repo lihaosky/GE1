@@ -356,7 +356,8 @@ public class FileOperator {
 			bis.close();
 			return true;
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.out.println("Can't find file: " + filePath);
+			//e.printStackTrace();
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();

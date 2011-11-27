@@ -74,6 +74,7 @@ public class AssignmentHandler extends Thread {
 						oos.close();
 						ois.close();
 						masterSocket.close();
+						return;
 					}
 				}
 				//Add more replication from master
@@ -93,10 +94,11 @@ public class AssignmentHandler extends Thread {
 					oos.close();
 					ois.close();
 					masterSocket.close();
+					return;
 				}
 			}
 		} catch(SocketException e) {
-			e.printStackTrace();
+			System.out.println("Master closed socket!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {

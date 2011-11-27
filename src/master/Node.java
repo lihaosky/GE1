@@ -259,6 +259,7 @@ public class Node extends Thread {
 		for (int i = 0; i < repList.size(); i++) {
 			if (repList.get(i) == repNum) {
 				repList.remove(i);
+				break;
 			}
 		}
 	}

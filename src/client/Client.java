@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 
@@ -51,8 +52,9 @@ public class Client {
 	 * @return
 	 */
 	public boolean addJob() {
+		Socket s = null;
 		try {
-			Socket s = new Socket(Parameters.masterHost, common.Parameters.serverPort);
+			s = new Socket(Parameters.masterHost, common.Parameters.serverPort);
 			
 			//Initiate job
 			File file = new File(this.filePath);
@@ -127,6 +129,14 @@ public class Client {
 					return false;
 				}
 			}
+		} catch(SocketException e) {
+			System.err.println("Server closed socket!");
+			try {
+				s.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			return false;
 		} catch (UnknownHostException e) {
 			System.err.println("Can't find the server!");
 			e.printStackTrace();

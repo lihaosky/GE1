@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+
 import common.FileOperator;
 import common.Message;
 import common.command.CheckStatusAck;
@@ -44,8 +46,6 @@ public class JobHandler extends Thread {
 					int repNum = ijc.repNum;
 					int time = ijc.time;
 					Long fileLength = ijc.fileLength;
-					//System.out.println("Rep number is " + repNum);
-					//Thread.sleep(2000);
 					jobID = addJob(repNum, time, fileLength);
 					InitJobAck ija = new InitJobAck(Command.InitJobAck, jobID);
 					oos.writeObject(ija);
@@ -86,6 +86,8 @@ public class JobHandler extends Thread {
 					return;
 				}
 			}
+		} catch(SocketException e) {
+			System.out.println("Client closed socket!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
