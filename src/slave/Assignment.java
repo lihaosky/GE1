@@ -6,9 +6,9 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import common.Command;
-import common.DownloadRepCommand;
 import common.FileOperator;
+import common.command.Command;
+import common.command.DownloadRepCommand;
 
 /**
  * Represents divisions assigned by master to execute
@@ -20,6 +20,7 @@ public class Assignment extends Thread {
 	private ArrayList<Integer> repList;
 	private Socket masterSocket;
 	private ObjectOutputStream oos;
+	private boolean isFinished;
 	/**
 	 * Assignment constructor
 	 * @param nodeID This nodeID
@@ -32,6 +33,7 @@ public class Assignment extends Thread {
 		this.repList = repList;
 		this.oos = oos;
 		this.masterSocket = masterSocket;
+		isFinished = false;
 	}
 	
 	/**
@@ -112,8 +114,26 @@ public class Assignment extends Thread {
 				System.out.println("Upload replication to master error!");
 			}
 			
+			//Some replication may be added
+			if (i == getRepListSize()) {
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
 		}
+		setIsFinished();
 		System.out.println("Finished executions!");
+	}
+	
+	synchronized public void setIsFinished() {
+		isFinished = true;
+	}
+	
+	synchronized public boolean isFinished() {
+		return isFinished;
 	}
 	
 	/**
