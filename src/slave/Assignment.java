@@ -115,7 +115,7 @@ public class Assignment extends Thread {
 			}
 			
 			//Some replication may be added
-			if (i == getRepListSize()) {
+			if (i == getRepListSize() - 1) {
 				try {
 					Thread.sleep(10000);
 				} catch (InterruptedException e) {
