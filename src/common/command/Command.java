@@ -1,4 +1,4 @@
-package common;
+package common.command;
 
 import java.io.*;
 
@@ -22,4 +22,6 @@ public class Command implements Serializable {
 	public static int InitAssignmentCommand = 6;
 	public static int DownloadRepCommand = 7;
 	public static int AddRepCommand = 8;
+	public static int ErrorMessage = 9;
+	public static int ErrorAck = 10;
 }

@@ -1,4 +1,5 @@
-package common;
+package common.command;
+
 
 public class DownloadRepCommand extends Command {
 

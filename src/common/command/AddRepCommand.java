@@ -1,6 +1,7 @@
-package common;
+package common.command;
 
 import java.util.ArrayList;
+
 
 public class AddRepCommand extends Command {
 	
