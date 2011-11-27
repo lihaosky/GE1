@@ -10,14 +10,16 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 
-import common.CheckStatusAck;
-import common.CheckStatusCommand;
-import common.Command;
-import common.DownloadAck;
-import common.DownloadCommand;
 import common.FileOperator;
-import common.InitJobAck;
-import common.InitJobCommand;
+import common.command.CheckStatusAck;
+import common.command.CheckStatusCommand;
+import common.command.Command;
+import common.command.DownloadAck;
+import common.command.DownloadCommand;
+import common.command.ErrorAck;
+import common.command.ErrorCommand;
+import common.command.InitJobAck;
+import common.command.InitJobCommand;
 
 public class Client {
 	
@@ -115,6 +117,15 @@ public class Client {
 				if (cmd.commandID == Command.CheckStatusAck) {
 					CheckStatusAck csa = (CheckStatusAck)cmd;
 					System.out.println("Finished " + csa.finishedRep + " replications (" + ((double)csa.finishedRep) / repNum * 100 + "%)");
+				}
+				//Error message
+				if (cmd.commandID == Command.ErrorMessage) {
+					ErrorCommand em = (ErrorCommand)cmd;
+					System.out.println(em.message);
+					oos.writeObject(new ErrorAck(Command.ErrorAck));
+					oos.flush();
+					s.close();
+					return false;
 				}
 			}
 		} catch (UnknownHostException e) {
@@ -243,7 +254,7 @@ public class Client {
 		Client clientObj = new Client(repNum, filePath, outputFilePath, time);
 
 		if (!clientObj.addJob()) {
-			System.err.println("Add job failure!");
+			System.err.println("Server error!");
 		}
 		
 		System.exit(0);
