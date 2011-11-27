@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import common.CheckStatusAck;
-import common.CheckStatusCommand;
-import common.Command;
-import common.DownloadAck;
 import common.FileOperator;
-import common.InitJobAck;
-import common.InitJobCommand;
 import common.Message;
+import common.command.CheckStatusAck;
+import common.command.CheckStatusCommand;
+import common.command.Command;
+import common.command.DownloadAck;
+import common.command.InitJobAck;
+import common.command.InitJobCommand;
 
 /**
  * Handle client job request
@@ -56,7 +56,7 @@ public class JobHandler extends Thread {
 					}
 				}
 				//Client check status
-				else if (cmd.commandID == Command.CheckStatusCommand) {
+				if (cmd.commandID == Command.CheckStatusCommand) {
 					CheckStatusCommand csc = (CheckStatusCommand)cmd;
 					Job job = JobTracker.getJob(csc.jobID);
 					int finishedRep = job.getFinishedRep();
@@ -65,7 +65,7 @@ public class JobHandler extends Thread {
 					oos.flush();
 				}
 				//Ack to download
-				else if (cmd.commandID == Command.DownloadAck) {
+				if (cmd.commandID == Command.DownloadAck) {
 					DownloadAck da = (DownloadAck)cmd;
 					if (da.status < 0) {
 						System.out.println("Client download result error!");
@@ -77,6 +77,13 @@ public class JobHandler extends Thread {
 						JobTracker.removeJob(jobID);
 						return;
 					}
+				}
+				if (cmd.commandID == Command.ErrorAck) {
+					ois.close();
+					oos.close();
+					clientSocket.close();
+					JobTracker.removeJob(jobID);
+					return;
 				}
 			}
 		} catch (IOException e) {
