@@ -8,13 +8,14 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import common.Command;
-import common.DownloadAck;
-import common.DownloadRepCommand;
 import common.FileOperator;
-import common.InitAssignmentCommand;
-import common.InitJobAck;
 import common.Message;
+import common.command.AddRepCommand;
+import common.command.Command;
+import common.command.DownloadAck;
+import common.command.DownloadRepCommand;
+import common.command.InitAssignmentCommand;
+import common.command.InitJobAck;
 
 /**
  * Contains node information
@@ -111,11 +112,17 @@ public class Node extends Thread {
 			InitJobAck ija = (InitJobAck)cmd;
 			if (ija.jobID < 0) {
 				System.out.println("Add asignment error in slave!");
+				slaveSocket.close();
 				return Message.UploadError;
 			}
 			System.out.println("Add assignemnt successfully!");
 		} catch (IOException e) {
 			System.out.println("IO error!");
+			try {
+				slaveSocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 			return Message.UploadError;
 		} catch (ClassNotFoundException e) {
@@ -208,8 +215,15 @@ public class Node extends Thread {
 	 * Add replication to this node
 	 * @param repNum
 	 */
-	synchronized public void addRep(int repNum) {
-		repList.add(repNum);
+	synchronized public void addRep(ArrayList<Integer> addedRep) {
+		for (int i = 0; i < addedRep.size(); i++) {
+			repList.add(addedRep.get(i));
+		}
+		try {
+			oos.writeObject(new AddRepCommand(Command.AddRepCommand, addedRep));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
