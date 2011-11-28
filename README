@@ -1,0 +1,26 @@
+1. Master, slave and client need configuration files.
+   i)  Put .GEmaster.config under home directory of master. The format should be:
+       masterDataPath=...       /* Should be a directory containing client data. Will be created if not exist. */
+       masterResultPath=...     /* Should be a directory containing result fetched from slaves. Will be created if not exist. */
+       marsOutLocation=...      /* Should be the path of marsOut. Must be correct. */
+       marsOutCtlLocation=...   /* Should be the path of marsOut control file. Must be correct. */
+   ii) Put .GEslave.config under home directory of slave. The format should be:
+       slaveDataPath=...        /* Should be a directory containing data fetched from master. Will be created if not exist. */
+       marsMainLocation=...     /* Should be the path of marsMain. Must be correct. */
+       marsMainCtlLocation=...  /* Should be the path of marsMain control file. Must be correct. */
+   iii)Put .GEclient.config under home directory of client. The format should be:
+       masterHost=...           /* Should be the host name of master. */
+
+2. Master should have a file under its home directory named .nodeList.config. Put slave host name or IP address in it. One per line.
+
+3. Master, slave should be executed on 64-bit Linux machines with JDK-1.6 installed. Client can be executed in either Windows or Linux based machines.
+   i)  Start master. If you download the code from github. Go to bin and execute the following command. ./master.sh
+   ii) Start slave.  If you download the code from github. Go to bin and execute the following command. ./slave.sh
+   iii)Start client. If you download the code from github. Go to bin and execute the following command. ./client.sh
+                     Note client.sh is for Linux. Command in it is basically the same for Windows. Will provide Windows version later.
+                     In client.sh, you need to provide the Input file directory or path and output directory. Also, the replication number and node number.
+                     May provide GUI if had time...
+
+
+
+
