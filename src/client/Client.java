@@ -118,7 +118,7 @@ public class Client {
 				//Ack to check status
 				if (cmd.commandID == Command.CheckStatusAck) {
 					CheckStatusAck csa = (CheckStatusAck)cmd;
-					System.out.println("Finished " + csa.finishedRep + " replications (" + ((double)csa.finishedRep) / repNum * 100 + "%)");
+					System.out.println("Finished " + csa.finishedRep + " replications (" + (int)(((double)csa.finishedRep) / repNum * 100) + "%)");
 				}
 				//Error message
 				if (cmd.commandID == Command.ErrorMessage) {

@@ -1,5 +1,6 @@
 package master;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -86,8 +87,20 @@ public class JobHandler extends Thread {
 					return;
 				}
 			}
+		} catch (EOFException e) {
+			System.err.println("Client closed socket!");
+			try {
+				clientSocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		} catch(SocketException e) {
 			System.out.println("Client closed socket!");
+			try {
+				clientSocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
