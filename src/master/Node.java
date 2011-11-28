@@ -1,5 +1,6 @@
 package master;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -213,8 +214,24 @@ public class Node extends Thread {
 						return;
 					}
 			}
+		} catch (EOFException e) {
+			System.err.println("Slave closed socket!");
+			try {
+				slaveSocket.close();
+				HBsocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
 		} catch (SocketException e) {
 			System.out.println("Close socket to slave " + this.IPAddress);
+			try {
+				slaveSocket.close();
+				HBsocket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -232,14 +249,16 @@ public class Node extends Thread {
 				System.out.println("Ping " + this.IPAddress + " error!");
 				return false;
 			}
+		} catch (EOFException e) {
+			System.err.println("Ping " + this.IPAddress + " error!");
+			return false;
 		} catch (IOException e) {
-			System.out.println("Ping " + this.IPAddress + " error!");
-			e.printStackTrace();
+			System.err.println("Ping " + this.IPAddress + " error!");
 			return false;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return false;
-		}
+		} 
 		
 	}
 	

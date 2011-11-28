@@ -1,5 +1,6 @@
 package slave;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,6 +32,8 @@ public class HeartbeatHandler extends Thread {
 						oos.writeObject(new Command(Command.PingAck));
 					}
 			}
+		} catch (EOFException e) {
+			System.err.println("Server closed socket!");
 		} catch (SocketException e) {
 			System.out.println("Server closed socket!");
 		} catch (IOException e) {

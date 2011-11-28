@@ -1,5 +1,6 @@
 package slave;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -82,6 +83,10 @@ public class AssignmentHandler extends Thread {
 					AddRepCommand arc = (AddRepCommand)cmd;
 					Assignment a = AssignmentTracker.getAssignment(jobID);
 					a.addRep(arc.repList);
+					System.out.println("Got more replication:");
+					for (int i = 0; i < arc.repList.size(); i++) {
+						System.out.println(arc.repList.get(i) + " ");
+					}
 				}
 				if (cmd.commandID == Command.FinishedCommand) {
 					Assignment a = AssignmentTracker.getAssignment(jobID);
@@ -97,6 +102,8 @@ public class AssignmentHandler extends Thread {
 					return;
 				}
 			}
+		} catch (EOFException e) {
+			System.out.println("Master closed Socket!");
 		} catch(SocketException e) {
 			System.out.println("Master closed socket!");
 		} catch (IOException e) {

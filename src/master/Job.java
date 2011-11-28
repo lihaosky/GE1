@@ -92,9 +92,13 @@ public class Job extends Thread {
 					node.setStatus(Node.DEAD);
 					//Get remaining replication of this node
 					ArrayList<Integer> remainRep = node.getRep();
+					
+					System.out.println("Remaining replications are:");
 					for (int j = 0; j < remainRep.size(); j++) {
+						System.out.print(remainRep.get(j) + " ");
 						reAllocateRep.add(remainRep.get(j));
 					}
+					System.out.println();
 					node.clearRep();
 					node.halt();
 				}
@@ -125,10 +129,11 @@ public class Job extends Thread {
 					ArrayList<Integer> taskList = new ArrayList<Integer>();
 					for (int j = i; j < reAllocateRep.size(); j++) {
 						if (j % slaveList.size() == i) {
+							System.out.println("Add replication " + reAllocateRep.get(j) + " to slave " + slaveList.get(i).getNodeID());
 							taskList.add(reAllocateRep.get(j));
 						}
-						slaveList.get(i).addRep(taskList); //Assume this will not fail...
 					}
+					slaveList.get(i).addRep(taskList); //Assume this will not fail...
 				}
 			}
 			
@@ -151,7 +156,7 @@ public class Job extends Thread {
 		
 		//Upload result to client
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + common.Parameters.resultFileName);
-		if (file.exists()) {
+		if (!file.exists()) {
 			System.out.println("File " + file.getAbsolutePath() + " doesn't exist!");
 			try {
 				oos.writeObject(new ErrorCommand(Command.ErrorMessage, "Result file doesn't exist!"));
