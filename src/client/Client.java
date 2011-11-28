@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -129,6 +130,14 @@ public class Client {
 					return false;
 				}
 			}
+		} catch (EOFException e) {
+			System.err.println("Server closed socket!");
+			try {
+				s.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			return false;
 		} catch(SocketException e) {
 			System.err.println("Server closed socket!");
 			try {
