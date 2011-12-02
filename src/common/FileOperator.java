@@ -322,7 +322,7 @@ public class FileOperator {
 			bw.newLine();
 			bw.write("1/results-1.bin");
 			bw.newLine();
-			for (int i = 2; i < repNum; i++) {
+			for (int i = 2; i <= repNum; i++) {
 				bw.write(i + "/results-" + i + ".bin");
 				bw.newLine();
 			}

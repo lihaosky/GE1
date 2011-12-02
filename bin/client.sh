@@ -1,3 +1,3 @@
-java -Djava.security.policy=java.policy client.Client -D/home/lihao/Desktop/GE_Project/fourpool-cornell -O/home/lihao/Desktop/GE_Project/ 100 10 
+java -Djava.security.policy=java.policy client.Client -D/home/lihao/Desktop/GE_Project/fourpool-cornell -O/home/lihao/Desktop/GE_Project/ 100 4 
 
-echo '10 nodes'
+echo '4 nodes'
