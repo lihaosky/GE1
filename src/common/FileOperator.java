@@ -134,6 +134,10 @@ public class FileOperator {
             		continue;
             	}
 	            String filePath = file.getAbsolutePath() + "/" + fileList[i];
+	            File f = new File(filePath);
+	            if (f.isDirectory()) {
+	            	continue;
+	            }
 	            System.out.println("Adding: " + fileList[i]);
 	            FileInputStream fi = new FileInputStream(filePath);
 	            origin = new BufferedInputStream(fi, BUFFER);
@@ -301,6 +305,40 @@ public class FileOperator {
 		} 
 	}
 	
+	/**
+	 * Edit mars-out.ctl file
+	 * @param file
+	 * @param repNum
+	 * @return
+	 */
+	public static boolean editMarsoutCtl(File file, int repNum) {
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+			BufferedReader br = new BufferedReader(new FileReader(master.Parameters.marsOutCtlLocation));
+			String line = br.readLine();
+			bw.write(line);
+			bw.newLine();
+			bw.write("1/mars.ot09");
+			bw.newLine();
+			bw.write("1/results-1.bin");
+			bw.newLine();
+			for (int i = 2; i < repNum; i++) {
+				bw.write(i + "/results-" + i + ".bin");
+				bw.newLine();
+			}
+			while ((line = br.readLine()) != null) {
+				bw.write(line);
+				bw.newLine();
+			}
+			br.close();
+			bw.flush();
+			bw.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	/**
 	 * Store a file from socket
 	 * @param filePath File path

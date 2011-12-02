@@ -152,7 +152,43 @@ public class Job extends Thread {
 			slaveList.get(i).finish();
 		}
 		
-		//MERGE RESULT: TO BE DONE
+		//Edit mars-out.ctl
+		System.out.println("Edit mars-out.ctl...");
+		if (!FileOperator.editMarsoutCtl(new File(master.Parameters.masterResultPath + "/" + jobID + "/mars-out.ctl"), repNum)) {
+			System.out.println("Edit mars-out.ctl error!");
+			try {
+				oos.writeObject(new ErrorCommand(Command.ErrorMessage, "Edit mars-out.ctl error!"));
+				oos.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+		
+		//Merge
+		System.out.println("Merge results...");
+		try {
+			Process p = Runtime.getRuntime().exec("./marsOut mars-out.ctl", null, new File(master.Parameters.masterResultPath + "/" + jobID));
+			p.waitFor();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		//Zip results
+		System.out.println("Zip results...");
+		String[] extraFiles = {"marsOut", "mars-out.ctl"};
+		if (!FileOperator.zipExcludeFile(new File(master.Parameters.masterResultPath + "/" + jobID), extraFiles)) {
+			System.out.println("Zip results error!");
+			try {
+				oos.writeObject(new ErrorCommand(Command.ErrorMessage, "zip results error!"));
+				oos.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		
 		//Upload result to client
 		File file = new File(Parameters.masterResultPath + "/" + jobID + "/" + common.Parameters.resultFileName);
