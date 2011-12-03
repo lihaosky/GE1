@@ -304,6 +304,7 @@ class ReadInput extends Thread {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			try {
 				String i = br.readLine();
+				i = i.trim().toLowerCase();
 				if (i.equals("status")) {
 					CheckStatusCommand csc = new CheckStatusCommand(Command.CheckStatusCommand, jobID);
 					oos.writeObject(csc);
