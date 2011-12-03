@@ -25,9 +25,12 @@ public class NodeManager {
 			br = new BufferedReader(new FileReader(Parameters.nodeListFile));
 			String line = br.readLine();
 			while (line != null) {
-				nodeList.add(new Node(line, Node.AVAILABLE));
+				line = line.trim();
+				if (!line.equals("")) {
+					nodeList.add(new Node(line, Node.AVAILABLE));
+					n++;
+				}
 				line = br.readLine();
-				n++;
 			}
 			System.out.println("Found " + n + " slave nodes!");
 			return true;
